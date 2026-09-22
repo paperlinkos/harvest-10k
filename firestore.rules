@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function: check valid non-empty string
+    function isNonEmptyString(val) {
+      return val is string && val.size() > 0 && val.size() < 500;
+    }
+
+    // Harvest 10K Soul Records: allow read for all authenticated/public displays, allow write
+    match /harvest_souls/{recordId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasAll(['centreId'])
+                            && request.resource.data.centreId is string;
+      allow delete: if true;
+    }
+
+    // Harvest 10K Soul Winners Directory
+    match /harvest_winners/{winnerId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.fullName is string;
+      allow delete: if true;
+    }
+
+    // Harvest 10K Live Batches & Tally counters
+    match /harvest_batches/{batchId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Harvest 10K Campaign Settings & Live Tickers
+    match /harvest_meta/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

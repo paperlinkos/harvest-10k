@@ -1,0 +1,6 @@
+{
+  "name": "Harvest 10K",
+  "description": "Real-time soul-winning collation and results command centre dashboard for Abuja, Federal Capital Territory, Nigeria across 6 Area Councils and 14 collation hubs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
