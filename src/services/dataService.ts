@@ -2254,7 +2254,7 @@ export class DataService {
       this.soulRecords.filter(r => r.status === 'pending' && !r.isDeleted).length;
 
     // Projected total based on current velocity
-    const hourlyVelocity = totalVerifiedSouls === 0 ? 0 : Math.max(soulsLastHour, 85);
+    const hourlyVelocity = soulsLastHour;
     const projectedTotal = totalVerifiedSouls === 0 ? 0 : Math.min(target * 1.5, Math.round(totalVerifiedSouls + hourlyVelocity * 18));
 
     return {

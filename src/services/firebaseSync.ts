@@ -19,10 +19,10 @@ export class FirebaseSyncService {
     }
   }
 
-  public async syncSoulRecord(record: SoulRecord, isLive: boolean = false): Promise<void> {
+  public async syncSoulRecord(record: SoulRecord, isLive: boolean = true): Promise<void> {
     if (!this.isAvailable) return;
     try {
-      const colName = isLive ? 'live_souls' : 'souls';
+      const colName = 'live_souls';
       const ref = doc(db, colName, record.id);
       // Clean undefined values for Firestore
       const cleanData = JSON.parse(JSON.stringify(record));
@@ -32,10 +32,10 @@ export class FirebaseSyncService {
     }
   }
 
-  public async syncBatch(batchItem: Batch, isLive: boolean = false): Promise<void> {
+  public async syncBatch(batchItem: Batch, isLive: boolean = true): Promise<void> {
     if (!this.isAvailable) return;
     try {
-      const colName = isLive ? 'live_batches' : 'batches';
+      const colName = 'live_batches';
       const ref = doc(db, colName, batchItem.id);
       const cleanData = JSON.parse(JSON.stringify(batchItem));
       await setDoc(ref, cleanData, { merge: true });
@@ -56,36 +56,25 @@ export class FirebaseSyncService {
   }
 
   public async initialBulkSync(souls: SoulRecord[], batches: Batch[]): Promise<void> {
-    if (!this.isAvailable) return;
-    try {
-      // Sync initial records in batches of up to 500
-      const chunk = souls.slice(0, 100);
-      const batchOp = writeBatch(db);
-      chunk.forEach(s => {
-        const ref = doc(db, 'souls', s.id);
-        batchOp.set(ref, JSON.parse(JSON.stringify(s)), { merge: true });
-      });
-      batches.slice(0, 50).forEach(b => {
-        const ref = doc(db, 'batches', b.id);
-        batchOp.set(ref, JSON.parse(JSON.stringify(b)), { merge: true });
-      });
-      await batchOp.commit();
-    } catch (err) {
-      console.warn('[FirebaseSync] initialBulkSync deferred:', err);
-    }
+    // Disabled bulk seeding to prevent demo records from syncing to Firestore
+    return;
   }
 
-  public subscribeToSouls(callback: (remoteSouls: SoulRecord[]) => void, isLive: boolean = false): () => void {
+  public subscribeToSouls(callback: (remoteSouls: SoulRecord[]) => void, isLive: boolean = true): () => void {
     if (!this.isAvailable) return () => {};
     try {
-      const colName = isLive ? 'live_souls' : 'souls';
+      const colName = 'live_souls';
       const q = query(collection(db, colName), limit(1000));
       return onSnapshot(
         q,
         snapshot => {
           const remoteSouls: SoulRecord[] = [];
           snapshot.forEach(docSnap => {
-            remoteSouls.push(docSnap.data() as SoulRecord);
+            const data = docSnap.data() as SoulRecord;
+            // Ignore legacy demo records
+            if (data.id && !data.id.startsWith('soul-1') && !data.id.startsWith('soul-2') && !data.id.startsWith('soul-3')) {
+              remoteSouls.push(data);
+            }
           });
           callback(remoteSouls);
         },
@@ -99,17 +88,20 @@ export class FirebaseSyncService {
     }
   }
 
-  public subscribeToBatches(callback: (remoteBatches: Batch[]) => void, isLive: boolean = false): () => void {
+  public subscribeToBatches(callback: (remoteBatches: Batch[]) => void, isLive: boolean = true): () => void {
     if (!this.isAvailable) return () => {};
     try {
-      const colName = isLive ? 'live_batches' : 'batches';
+      const colName = 'live_batches';
       const q = query(collection(db, colName), limit(500));
       return onSnapshot(
         q,
         snapshot => {
           const remoteBatches: Batch[] = [];
           snapshot.forEach(docSnap => {
-            remoteBatches.push(docSnap.data() as Batch);
+            const data = docSnap.data() as Batch;
+            if (data.id && !data.id.startsWith('batch-1') && !data.id.startsWith('batch-2') && !data.id.startsWith('batch-3')) {
+              remoteBatches.push(data);
+            }
           });
           callback(remoteBatches);
         },
