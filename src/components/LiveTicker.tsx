@@ -50,6 +50,13 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
     }
   };
 
+  const DUMMY_REGEX = /Barnabas|Chiamaka|Olumide|Ibrahim|Blessing|Ifeanyi|Bitrus|Funmilayo|Joshua Idoko|Maryam Bako|Sunday Oche|Amina Bello|Aloy/i;
+
+  const validItems = useMemo(() => {
+    if (!items || items.length === 0) return [];
+    return items.filter(item => !item.winnerName || !DUMMY_REGEX.test(item.winnerName));
+  }, [items]);
+
   // Prepare normalized list of ticker items
   const baseContent = useMemo(() => {
     const list: TickerSubmission[] = [];
@@ -67,22 +74,12 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
       });
     }
 
-    if (items && items.length > 0) {
-      list.push(...items.slice(0, 20));
-    } else {
-      list.push({
-        id: 'no-uploads-placeholder',
-        centreName: 'Harvest 10K Live',
-        count: 0,
-        winnerName: '',
-        timestamp: new Date().toISOString(),
-        status: 'verified',
-        isNoUploadsPlaceholder: true,
-      });
+    if (validItems.length > 0) {
+      list.push(...validItems.slice(0, 20));
     }
 
     return list;
-  }, [items, announcement]);
+  }, [validItems, announcement]);
 
   // Ensure there are at least 10 items in the base sequence so wide monitors are always filled,
   // then duplicate the base sequence exactly once for seamless -50% translateX CSS animation.
@@ -101,6 +98,32 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
   const toggleSpeed = () => {
     setSpeed(prev => (prev === 'normal' ? 'fast' : prev === 'fast' ? 'slow' : 'normal'));
   };
+
+  // If there are no field uploads and no active announcement, render a static, non-running clean bar
+  if (baseContent.length === 0) {
+    return (
+      <div
+        className={`w-full border-t py-2.5 px-4 select-none flex items-center justify-between z-30 transition-colors ${
+          isDark
+            ? 'bg-slate-950 border-slate-800 text-slate-100'
+            : 'bg-slate-50 border-slate-300 text-slate-900 shadow-sm'
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            Collation Wire:
+          </span>
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            No field uploads recorded yet — Be the first to record a soul!
+          </span>
+        </div>
+        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest hidden sm:inline">
+          Live 0 Baseline
+        </span>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -2202,7 +2202,8 @@ export class DataService {
   }
 
   public getTickerItems(): TickerSubmission[] {
-    return [...this.tickerItems];
+    const DUMMY_NAMES_REGEX = /Barnabas|Chiamaka|Olumide|Ibrahim|Blessing|Ifeanyi|Bitrus|Funmilayo|Joshua Idoko|Maryam Bako|Sunday Oche|Amina Bello|Aloy/i;
+    return this.tickerItems.filter(item => !item.winnerName || !DUMMY_NAMES_REGEX.test(item.winnerName));
   }
 
   public getAuditLogs(): AuditLogEntry[] {
