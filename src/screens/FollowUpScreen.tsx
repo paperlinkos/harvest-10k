@@ -245,18 +245,36 @@ export const FollowUpScreen: React.FC<FollowUpScreenProps> = ({
                                 <span className="truncate">{r.phone}</span>
                               </div>
                               {r.phone && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setMessageModalRecord(r);
-                                  }}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20 transition-colors shrink-0 whitespace-nowrap cursor-pointer"
-                                  title="Send WhatsApp or SMS verification message"
-                                >
-                                  <MessageCircle className="w-3 h-3 shrink-0" />
-                                  <span>Message / Verify</span>
-                                </button>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <a
+                                    href={getWhatsAppLink({
+                                      phone: r.phone,
+                                      firstName: r.firstName,
+                                      decisionType: r.decisionType,
+                                      centreName: centre?.name,
+                                      soulWinnerName: r.wonByName,
+                                      templateType: 'foundation_school',
+                                    }) || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="p-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-colors shrink-0 cursor-pointer"
+                                    title="1-Click WhatsApp Foundation School Invite"
+                                  >
+                                    <MessageCircle className="w-3 h-3 shrink-0" />
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setMessageModalRecord(r);
+                                    }}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700 transition-colors shrink-0 whitespace-nowrap cursor-pointer"
+                                    title="Open full Message & Discipleship Modal"
+                                  >
+                                    <span>Verify / Templates</span>
+                                  </button>
+                                </div>
                               )}
                             </div>
                           )}

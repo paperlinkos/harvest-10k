@@ -21,7 +21,7 @@ import {
   generateCampaignSummaryHTML,
   CampaignReportData,
 } from '../utils/exportUtils';
-import { getWhatsAppLink } from '../utils/whatsappUtils';
+import { getWhatsAppLink, generateExecutiveWhatsAppBriefing } from '../utils/whatsappUtils';
 import {
   FileSpreadsheet,
   Download,
@@ -51,6 +51,7 @@ import {
   Bus,
   Navigation,
   MessageCircle,
+  Copy,
 } from 'lucide-react';
 import { GeospatialHarvestMap } from '../components/GeospatialHarvestMap';
 import { resolveGroupJurisdiction, getCentresForJurisdiction } from '../services/groupJurisdictionService';
@@ -425,6 +426,32 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
     (selectedDecision !== 'all' ? 1 : 0) +
     (selectedStatus !== 'all' ? 1 : 0);
 
+  const [showWhatsAppBriefingModal, setShowWhatsAppBriefingModal] = useState<boolean>(false);
+  const [copiedBriefing, setCopiedBriefing] = useState<boolean>(false);
+
+  const whatsappBriefingText = useMemo(() => {
+    const topCentres = [...reportData.centreBreakdown]
+      .sort((a, b) => b.totalSouls - a.totalSouls)
+      .slice(0, 3)
+      .map(c => ({ name: c.centreName, total: c.totalSouls }));
+
+    return generateExecutiveWhatsAppBriefing({
+      totalSouls: reportData.metrics.totalSouls,
+      target: reportData.metrics.target,
+      attainmentPercent: reportData.metrics.attainmentPercent,
+      newConverts: reportData.metrics.newConverts,
+      rededications: reportData.metrics.rededications,
+      returnees: reportData.metrics.returnees,
+      topCentres,
+    });
+  }, [reportData]);
+
+  const handleCopyWhatsAppBriefing = () => {
+    navigator.clipboard.writeText(whatsappBriefingText);
+    setCopiedBriefing(true);
+    setTimeout(() => setCopiedBriefing(false), 2500);
+  };
+
   // Export Handlers
   const handleDownloadReport = () => {
     exportCollationReportCSV(reportData, filteredRecords);
@@ -546,6 +573,17 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
             >
               <Home className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>Addresses (CSV)</span>
+            </button>
+
+            {/* Action 2c: WhatsApp Executive Briefing */}
+            <button
+              id="export-whatsapp-briefing-btn"
+              onClick={() => setShowWhatsAppBriefingModal(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors shadow-sm active:scale-95 cursor-pointer"
+              title="Generate 1-Click Executive WhatsApp Briefing formatted for Pastor/Leadership groups"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>WhatsApp Briefing</span>
             </button>
 
             {/* Action 3: Printable Campaign Summary Report (HTML) */}
@@ -1799,6 +1837,81 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
                 srcDoc={generateCampaignSummaryHTML(reportData)}
                 className="w-full h-full rounded-xl border border-slate-300 bg-white shadow-inner"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Executive Briefing Modal */}
+      {showWhatsAppBriefingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col space-y-4 p-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Executive WhatsApp Briefing
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Formatted for Pastoral & Leadership WhatsApp Groups
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowWhatsAppBriefingModal(false)}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Briefing Text Preview
+              </label>
+              <textarea
+                readOnly
+                rows={11}
+                value={whatsappBriefingText}
+                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs font-mono focus:outline-none resize-none leading-relaxed"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleCopyWhatsAppBriefing}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs ${
+                  copiedBriefing
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:opacity-90'
+                }`}
+              >
+                {copiedBriefing ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Copied to Clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Copy Briefing Text</span>
+                  </>
+                )}
+              </button>
+
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(whatsappBriefingText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center gap-2 shadow-xs transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Open WhatsApp</span>
+              </a>
             </div>
           </div>
         </div>
