@@ -7,6 +7,7 @@ import { AuthModal } from './components/AuthModal';
 import { LiveTicker } from './components/LiveTicker';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LiveDashboard } from './screens/LiveDashboard';
+import { CampaignCountdownWidget } from './components/CampaignCountdownWidget';
 import { ProjectorView } from './screens/ProjectorView';
 import { AddSoulScreen } from './screens/AddSoulScreen';
 import { ApprovalQueueScreen } from './screens/ApprovalQueueScreen';
@@ -417,7 +418,7 @@ export default function App() {
 
         {/* Dynamic Screen View */}
         <main
-          className={`w-full max-w-7xl mx-auto transition-all ${
+          className={`w-full max-w-[1750px] mx-auto transition-all ${
             currentScreen === 'dashboard'
               ? 'flex-1 flex flex-col min-h-0 h-full px-3 sm:px-6 lg:px-8 py-1.5 overflow-hidden'
               : 'flex-1 p-4 sm:p-6 lg:p-8'
@@ -535,6 +536,11 @@ export default function App() {
             />
           )}
         </main>
+
+        {/* Centered Campaign Countdown Widget just above running text */}
+        <div className="flex justify-center items-center py-1.5 px-4 z-20 shrink-0 bg-transparent">
+          <CampaignCountdownWidget variant="bottom-bar" />
+        </div>
 
         {/* Persistent Bottom Crawling Wire Ticker */}
         <footer className="sticky bottom-0 z-30">

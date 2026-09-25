@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Flame, CheckCircle2 } from 'lucide-react';
 
 interface CampaignCountdownWidgetProps {
-  variant?: 'header' | 'dashboard' | 'compact';
+  variant?: 'header' | 'dashboard' | 'compact' | 'bottom-bar';
   className?: string;
 }
 
@@ -42,27 +42,27 @@ export const CampaignCountdownWidget: React.FC<CampaignCountdownWidgetProps> = (
 
   const pad = (n: number) => n.toString().padStart(2, '0');
 
-  if (variant === 'compact' || variant === 'header') {
+  if (variant === 'compact' || variant === 'header' || variant === 'bottom-bar') {
     return (
       <div
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border bg-slate-900/90 dark:bg-slate-900/90 text-white border-slate-700/80 shadow-xs backdrop-blur-md ${className}`}
+        className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border bg-slate-900/95 dark:bg-slate-900/95 text-white border-slate-700/80 shadow-lg backdrop-blur-md transition-all ${className}`}
       >
         {isBeforeStart && (
           <>
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 hidden sm:inline">
-                Campaign Starts In:
+              <span className="text-[11px] font-black uppercase tracking-wider text-amber-300">
+                Oct 1 Campaign Countdown:
               </span>
             </div>
-            <div className="flex items-center gap-1 text-xs font-mono font-bold tracking-tight text-white">
-              {days > 0 && <span className="text-amber-200">{days}d </span>}
-              <span>{pad(hours)}h</span>
-              <span className="text-slate-400">:</span>
-              <span>{pad(minutes)}m</span>
-              <span className="text-slate-400">:</span>
-              <span className="text-amber-400">{pad(seconds)}s</span>
+            <div className="flex items-center gap-1 text-xs sm:text-sm font-mono font-bold tracking-tight text-white">
+              {days > 0 && <span className="text-amber-300 font-extrabold mr-0.5">{days}d </span>}
+              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300">{pad(hours)}h</span>
+              <span className="text-slate-500">:</span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-white">{pad(minutes)}m</span>
+              <span className="text-slate-500">:</span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-amber-400 font-extrabold">{pad(seconds)}s</span>
             </div>
           </>
         )}
@@ -72,24 +72,24 @@ export const CampaignCountdownWidget: React.FC<CampaignCountdownWidgetProps> = (
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
               <Flame className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 hidden sm:inline">
+              <span className="text-[11px] font-black uppercase tracking-wider text-rose-300">
                 24-Hour Campaign Live:
               </span>
             </div>
-            <div className="flex items-center gap-1 text-xs font-mono font-bold tracking-tight text-white">
-              <span className="text-rose-400">{pad(hours)}h</span>
-              <span className="text-slate-400">:</span>
-              <span>{pad(minutes)}m</span>
-              <span className="text-slate-400">:</span>
-              <span className="text-rose-400">{pad(seconds)}s</span>
+            <div className="flex items-center gap-1 text-xs sm:text-sm font-mono font-bold tracking-tight text-white">
+              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-rose-400 font-extrabold">{pad(hours)}h</span>
+              <span className="text-slate-500">:</span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-white">{pad(minutes)}m</span>
+              <span className="text-slate-500">:</span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-rose-400 font-extrabold">{pad(seconds)}s</span>
             </div>
           </>
         )}
 
         {isCompleted && (
           <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[11px]">Campaign Concluded</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span className="text-[11px] uppercase tracking-wider font-extrabold">24-Hour Campaign Completed</span>
           </div>
         )}
       </div>

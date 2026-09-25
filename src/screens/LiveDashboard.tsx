@@ -361,16 +361,11 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
         </div>
       </header>
 
-      {/* Campaign Countdown Banner for Oct 1 12:00 AM WAT */}
-      <div className="w-full my-2 px-1 sm:px-2">
-        <CampaignCountdownWidget variant="dashboard" />
-      </div>
-
       {/* ========================================================================= */}
       {/* 2. THE HERO STAGE: DEAD-CENTER COUNTER (ARRANGED LIKE REFERENCE IMAGE)     */}
       {/* ========================================================================= */}
-      <main className="flex-1 flex flex-col items-center justify-center py-2 sm:py-4 my-auto min-h-0">
-        <div className="w-full max-w-4xl flex flex-col items-center text-center space-y-2.5 sm:space-y-3.5">
+      <main className="flex-1 flex flex-col items-center justify-center py-2 sm:py-4 my-auto min-h-0 w-full">
+        <div className="w-full max-w-6xl flex flex-col items-center text-center space-y-2.5 sm:space-y-3.5">
           {/* Active Category Heading */}
           <div className="space-y-0.5">
             <h2 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 tracking-wide">
