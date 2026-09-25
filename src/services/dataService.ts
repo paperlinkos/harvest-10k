@@ -758,13 +758,11 @@ export class DataService {
   private loadCollationMode(): CollationMode {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        const stored = localStorage.getItem('ceaz1_collation_mode');
-        if (stored === 'live' || stored === 'demo') return stored as CollationMode;
+        localStorage.setItem('ceaz1_collation_mode', 'live');
       }
     } catch (e) {
-      console.warn('[DataService] Error reading collation mode:', e);
+      console.warn('[DataService] Error forcing live collation mode:', e);
     }
-    // Default to clean live baseline ("everything else is clean, so from zero and so on")
     return 'live';
   }
 
@@ -912,14 +910,13 @@ export class DataService {
   }
 
   constructor() {
-    this.seedInitialData();
-    this.demoSoulRecords = [...this.soulRecords];
-    this.demoBatches = [...this.batches];
-    if (this.collationMode === 'live') {
-      this.soulRecords = this.liveSoulRecords;
-      this.batches = this.liveBatches;
-    }
-    this.seedTestimonies();
+    this.collationMode = 'live';
+    this.soulRecords = this.liveSoulRecords;
+    this.batches = this.liveBatches;
+    this.demoSoulRecords = [];
+    this.demoBatches = [];
+    this.tickerItems = [];
+    this.auditLogs = [];
     this.initOfflineQueue();
     this.initMediaDB();
     this.initFirebaseSync();
