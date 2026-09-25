@@ -92,33 +92,29 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
     return [...sequence, ...sequence];
   }, [baseContent]);
 
-  const speedDuration = speed === 'fast' ? '20s' : speed === 'slow' ? '70s' : '40s';
-  const speedClass = speed === 'fast' ? 'ticker-fast' : speed === 'slow' ? 'ticker-slow' : '';
-
-  const toggleSpeed = () => {
-    setSpeed(prev => (prev === 'normal' ? 'fast' : prev === 'fast' ? 'slow' : 'normal'));
-  };
+  const speedClass = 'ticker-slow';
 
   // If there are no field uploads and no active announcement, render a static, non-running clean bar
   if (baseContent.length === 0) {
     return (
       <div
-        className={`w-full border-t py-2.5 px-4 select-none flex items-center justify-between z-30 transition-colors ${
+        className={`w-full border-t py-1.5 px-3 select-none flex items-center justify-between z-30 transition-colors ${
           isDark
             ? 'bg-slate-950 border-slate-800 text-slate-100'
             : 'bg-slate-50 border-slate-300 text-slate-900 shadow-sm'
         }`}
       >
-        <div className="flex items-center gap-2.5">
-          <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Collation Wire:
+        <div className="flex items-center gap-2">
+          <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse shrink-0" />
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">
+            <span className="sm:hidden font-black text-emerald-400">CW:</span>
+            <span className="hidden sm:inline font-bold">Collation Wire:</span>
           </span>
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
             No field uploads recorded yet — Be the first to record a soul!
           </span>
         </div>
-        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest hidden sm:inline">
+        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest hidden sm:inline shrink-0">
           Live 0 Baseline
         </span>
       </div>
@@ -134,43 +130,15 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
             : 'bg-slate-50 border-slate-300 text-slate-900 shadow-sm'
         }`}
       >
-        {/* Fixed Live Broadcast Badge & Controls */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 dark:bg-slate-900 text-white shrink-0 font-display z-10 border-r border-slate-700 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-white">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-            </span>
-            <Radio className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline font-black tracking-wide">Collation Wire</span>
-          </div>
-
-          {/* Quick Play/Pause Control */}
-          <button
-            type="button"
-            onClick={() => setIsPaused(prev => !prev)}
-            className={`px-2 py-1 rounded-md transition-all cursor-pointer text-[10px] ml-1 flex items-center gap-1.5 font-bold ${
-              isPaused
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 ring-1 ring-emerald-500/30'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white'
-            }`}
-            title={isPaused ? 'Resume ticker movement' : 'Pause ticker movement'}
-            aria-label={isPaused ? 'Resume ticker movement' : 'Pause ticker movement'}
-          >
-            {isPaused ? <Play className="w-3 h-3 text-emerald-400 fill-emerald-400" /> : <Pause className="w-3 h-3 text-slate-300" />}
-            <span className="text-[10px]">{isPaused ? 'Resume' : 'Pause'}</span>
-          </button>
-
-          {/* Quick Speed Toggle */}
-          <button
-            type="button"
-            onClick={toggleSpeed}
-            className="px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white transition-all cursor-pointer text-[10px] font-mono font-bold inline-flex items-center gap-1.5"
-            title="Toggle ticker crawl speed (1.0x -> 1.5x -> 0.7x)"
-          >
-            <Gauge className="w-3 h-3 text-amber-400" />
-            <span>{speed === 'fast' ? '1.5x FAST' : speed === 'slow' ? '0.7x SLOW' : '1.0x NORMAL'}</span>
-          </button>
+        {/* Fixed Compact Broadcast Badge (No manual controls, fixed 0.75x speed) */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-900 text-white shrink-0 font-display z-10 border-r border-slate-700 dark:border-slate-800 shadow-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+          </span>
+          <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="sm:hidden font-black text-xs tracking-wider text-emerald-400">CW</span>
+          <span className="hidden sm:inline font-black text-xs tracking-wide text-white uppercase">Collation Wire</span>
         </div>
 
         {/* Crawling Ticker Track */}
@@ -181,7 +149,7 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
             }`}
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',
-              animationDuration: speedDuration,
+              animationDuration: '65s',
             }}
           >
             {repeatedItems.map((item, idx) => {

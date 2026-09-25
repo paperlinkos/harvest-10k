@@ -82,11 +82,11 @@ export interface SyncHistoryEntry {
 // ABUJA FCT AREA COUNCILS (6 COUNCILS)
 // ==========================================
 export const INITIAL_AREA_COUNCILS: AreaCouncil[] = [
-  { id: 'amac', name: 'Abuja Municipal (AMAC)', code: 'AMAC', target: 5000 },
-  { id: 'bwari', name: 'Bwari', code: 'BWR', target: 1500 },
-  { id: 'gwagwalada', name: 'Gwagwalada', code: 'GWG', target: 1200 },
-  { id: 'kuje', name: 'Kuje', code: 'KUJ', target: 1000 },
-  { id: 'kwali', name: 'Kwali', code: 'KWL', target: 800 },
+  { id: 'amac', name: 'Abuja Municipal (AMAC)', code: 'AMAC', target: 25500 },
+  { id: 'bwari', name: 'Bwari', code: 'BWR', target: 7500 },
+  { id: 'gwagwalada', name: 'Gwagwalada', code: 'GWG', target: 3500 },
+  { id: 'kuje', name: 'Kuje', code: 'KUJ', target: 2000 },
+  { id: 'kwali', name: 'Kwali', code: 'KWL', target: 1000 },
   { id: 'abaji', name: 'Abaji', code: 'ABJ', target: 500 },
 ];
 
@@ -97,10 +97,10 @@ export const INITIAL_REGIONS = INITIAL_AREA_COUNCILS;
 // 14 ABUJA COLLATION CENTRES
 // ==========================================
 export const INITIAL_CENTRES: Centre[] = [
-  // Zonal Church Group (Group Target: 5,000)
-  { id: 'cnt-durumi-01', code: 'ZON-01', name: 'CE Zonal Church Service 1', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Auditorium - Service 1', coordinatorName: '', contactPhone: '', target: 2500, active: true },
-  { id: 'cnt-durumi-02', code: 'ZON-02', name: 'CE Zonal Church Service 2', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Auditorium - Service 2', coordinatorName: '', contactPhone: '', target: 2000, active: true },
-  { id: 'cnt-durumi-03', code: 'ZON-03', name: 'CE Durumi Central Hub', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Complex', coordinatorName: '', contactPhone: '', target: 500, active: true },
+  // Zonal Church Group (Group Target: 13,000)
+  { id: 'cnt-durumi-01', code: 'ZON-01', name: 'CE Zonal Church Service 1', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Auditorium - Service 1', coordinatorName: '', contactPhone: '', target: 6500, active: true },
+  { id: 'cnt-durumi-02', code: 'ZON-02', name: 'CE Zonal Church Service 2', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Auditorium - Service 2', coordinatorName: '', contactPhone: '', target: 5000, active: true },
+  { id: 'cnt-durumi-03', code: 'ZON-03', name: 'CE Durumi Central Hub', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Complex', coordinatorName: '', contactPhone: '', target: 1500, active: true },
 
   // Wuye Sub-Group 1 (Group Target: 1,000)
   { id: 'cnt-wuye1-1', code: 'WY1-01', name: 'CE KBS', groupName: 'Wuye Sub-Group 1', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE KBS Auditorium', coordinatorName: '', contactPhone: '', target: 400, active: true },
