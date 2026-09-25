@@ -71,12 +71,13 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
       list.push(...items.slice(0, 20));
     } else {
       list.push({
-        id: 'placeholder-1',
-        centreName: 'Abuja Central Collation',
-        count: 1,
-        winnerName: 'Field Collation Active',
+        id: 'no-uploads-placeholder',
+        centreName: 'Harvest 10K Live',
+        count: 0,
+        winnerName: '',
         timestamp: new Date().toISOString(),
         status: 'verified',
+        isNoUploadsPlaceholder: true,
       });
     }
 
@@ -177,6 +178,18 @@ export const LiveTicker: React.FC<LiveTickerProps> = ({
                       {announcement}
                     </span>
                     <span className="text-slate-400 dark:text-slate-500 font-bold px-1">•</span>
+                  </div>
+                );
+              }
+
+              if (item.isNoUploadsPlaceholder) {
+                return (
+                  <div
+                    key={`${item.id}-${idx}`}
+                    className="inline-flex items-center gap-2 text-xs font-bold tracking-tight bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-amber-900 dark:text-amber-200 px-4 py-1.5 rounded-full shadow-xs shrink-0"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+                    <span>No field uploads recorded yet — Be the first to record a soul!</span>
                   </div>
                 );
               }

@@ -298,6 +298,7 @@ export interface TickerSubmission {
   timestamp: string;
   status?: 'verified' | 'pending';
   isAnnouncement?: boolean;
+  isNoUploadsPlaceholder?: boolean;
 }
 
 export interface CentreStanding {
