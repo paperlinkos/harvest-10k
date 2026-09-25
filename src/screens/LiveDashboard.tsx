@@ -9,6 +9,7 @@ import { SessionTimerWidget } from '../components/SessionTimerWidget';
 import { OnboardingFlowCards } from '../components/OnboardingFlowCards';
 import { ScreenName } from '../components/Sidebar';
 import { PWAInstallButton } from '../components/PWAInstallButton';
+import { CampaignCountdownWidget } from '../components/CampaignCountdownWidget';
 import { UserRole, CollationMode } from '../types';
 import { useSessionTimer } from '../hooks/useSessionTimer';
 import { playDingSound, playCelebrationSound } from '../utils/audioUtils';
@@ -359,6 +360,11 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Campaign Countdown Banner for Oct 1 12:00 AM WAT */}
+      <div className="w-full my-2 px-1 sm:px-2">
+        <CampaignCountdownWidget variant="dashboard" />
+      </div>
 
       {/* ========================================================================= */}
       {/* 2. THE HERO STAGE: DEAD-CENTER COUNTER (ARRANGED LIKE REFERENCE IMAGE)     */}

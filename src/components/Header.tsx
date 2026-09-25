@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { ScreenName } from './Sidebar';
 import { AuthModal } from './AuthModal';
+import { CampaignCountdownWidget } from './CampaignCountdownWidget';
 
 interface HeaderProps {
   currentScreen: ScreenName;
@@ -110,6 +111,10 @@ export const Header: React.FC<HeaderProps> = ({
               {currentMeta.title}
             </span>
             <span className="text-[10px] text-slate-400 truncate">{currentMeta.subtitle}</span>
+          </div>
+
+          <div className="hidden sm:block ml-2">
+            <CampaignCountdownWidget variant="header" />
           </div>
         </div>
 

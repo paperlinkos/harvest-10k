@@ -90,8 +90,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Expandable Testing / Directorate Switcher
   const [showTestingBypass, setShowTestingBypass] = useState(false);
 
-  // Environment target upon login: Sandbox vs Live (Default: sandbox so logging in enters sandbox while everything else is clean from 0)
-  const [targetEnvironment, setTargetEnvironment] = useState<'sandbox' | 'live'>('sandbox');
+  // Environment target upon login: Always Live
+  const [targetEnvironment, setTargetEnvironment] = useState<'sandbox' | 'live'>('live');
 
   if (!isOpen) return null;
 
@@ -373,9 +373,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       );
     } else if (role === 'zonal_pastor') {
       const p: SoulWinnerProfile = {
-        id: 'zonal-pastor-aloy',
-        fullName: 'Pastor Aloy Okei',
-        phone: '+234 803 999 8888',
+        id: 'zonal-pastor-profile',
+        fullName: 'Zonal Pastor',
+        phone: '',
         email: 'zonalpastor@ceabuja.org',
         cellName: 'Executive Cell',
         pcfName: 'Zonal Central PCF',
@@ -390,8 +390,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     } else if (role === 'admin') {
       const p: SoulWinnerProfile = {
         id: 'admin-cmd',
-        fullName: 'Lead Campaign Administrator',
-        phone: '+234 803 777 0000',
+        fullName: 'Campaign Administrator',
+        phone: '',
         email: 'admin@harvest10k.org',
         cellName: 'Command Cell',
         pcfName: 'Operations PCF',
@@ -405,10 +405,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       onSuccessToast('Admin Mode Active', 'Full administrative & soul input access active.');
     } else if (role === 'soul_winner') {
       const p: SoulWinnerProfile = {
-        id: 'winner-barnabas',
-        fullName: 'Brother Barnabas Danjuma',
-        phone: '+234 802 345 6789',
-        email: 'barnabas@harvest10k.org',
+        id: 'winner-profile',
+        fullName: 'Soul Winner',
+        phone: '',
+        email: 'soulwinner@harvest10k.org',
         cellName: 'Grace Cell',
         pcfName: 'Haven PCF',
         churchCentreId: 'cnt-durumi-01',

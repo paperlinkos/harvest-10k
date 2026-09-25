@@ -51,13 +51,13 @@ export const AddSoulScreen: React.FC<AddSoulScreenProps> = ({
     dataService.getSoulWinnerProfile()
   );
   const [wonByName, setWonByName] = useState<string>(() =>
-    dataService.getSoulWinnerProfile().fullName || 'Evangelist Barnabas Danjuma'
+    dataService.getSoulWinnerProfile().fullName || ''
   );
   const [winnerCell, setWinnerCell] = useState<string>(() =>
-    dataService.getSoulWinnerProfile().cellName || 'Grace Cell'
+    dataService.getSoulWinnerProfile().cellName || ''
   );
   const [winnerPcf, setWinnerPcf] = useState<string>(() =>
-    dataService.getSoulWinnerProfile().pcfName || 'Haven PCF'
+    dataService.getSoulWinnerProfile().pcfName || ''
   );
   const [winnerPhone, setWinnerPhone] = useState<string>(() =>
     dataService.getSoulWinnerProfile().phone || ''
