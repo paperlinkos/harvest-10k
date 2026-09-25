@@ -36,7 +36,11 @@ import {
   SoulWinnerSummary,
   PcfLeaderboardEntry,
   CellLeaderboardEntry,
+  SmsGatewayTelemetry,
+  SmsDeliveryStatus,
+  CollationMode,
 } from '../types';
+import { bulkSmsService } from './bulkSmsService';
 import { playDingSound, playCelebrationSound } from '../utils/audioUtils';
 import {
   LOCALITIES,
@@ -93,231 +97,161 @@ export const INITIAL_REGIONS = INITIAL_AREA_COUNCILS;
 // 14 ABUJA COLLATION CENTRES
 // ==========================================
 export const INITIAL_CENTRES: Centre[] = [
-  {
-    id: 'cnt-amac-01',
-    code: 'AMAC-01',
-    name: 'Garki Centre',
-    areaCouncilId: 'amac',
-    regionId: 'amac',
-    areaCouncilCode: 'AMAC',
-    ward: 'Garki',
-    locality: 'Garki I',
-    venue: 'Garki Area 1 / Area 11 Collation Hub',
-    coordinatorName: 'Pastor Emmanuel Adeyemi',
-    contactPhone: '+234 803 451 9021',
-    target: 1100,
-    active: true,
-  },
-  {
-    id: 'cnt-amac-02',
-    code: 'AMAC-02',
-    name: 'Wuse II Centre',
-    areaCouncilId: 'amac',
-    regionId: 'amac',
-    areaCouncilCode: 'AMAC',
-    ward: 'Wuse',
-    locality: 'Wuse II',
-    venue: 'Banex / Aminu Kano Crescent Hub',
-    coordinatorName: 'Rev. Chinedu Okafor',
-    contactPhone: '+234 806 332 1089',
-    target: 1000,
-    active: true,
-  },
-  {
-    id: 'cnt-amac-03',
-    code: 'AMAC-03',
-    name: 'Maitama Centre',
-    areaCouncilId: 'amac',
-    regionId: 'amac',
-    areaCouncilCode: 'AMAC',
-    ward: 'City Centre',
-    locality: 'Maitama',
-    venue: 'Maitama Farmers Market Hub',
-    coordinatorName: 'Pastor Blessing Danjuma',
-    contactPhone: '+234 703 881 4055',
-    target: 800,
-    active: true,
-  },
-  {
-    id: 'cnt-amac-04',
-    code: 'AMAC-04',
-    name: 'Asokoro Centre',
-    areaCouncilId: 'amac',
-    regionId: 'amac',
-    areaCouncilCode: 'AMAC',
-    ward: 'Garki',
-    locality: 'Asokoro',
-    venue: 'Asokoro Extension / Guzape Junction',
-    coordinatorName: 'Evangelist Funmilayo Bello',
-    contactPhone: '+234 813 904 2217',
-    target: 700,
-    active: true,
-  },
-  {
-    id: 'cnt-amac-05',
-    code: 'AMAC-05',
-    name: 'Gwarinpa Centre',
-    areaCouncilId: 'amac',
-    regionId: 'amac',
-    areaCouncilCode: 'AMAC',
-    ward: 'Gwarinpa',
-    locality: 'Gwarinpa',
-    venue: '1st & 3rd Avenue Collation Point',
-    coordinatorName: 'Deacon Ifeanyi Eze',
-    contactPhone: '+234 901 773 8920',
-    target: 800,
-    active: true,
-  },
-  {
-    id: 'cnt-amac-06',
-    code: 'AMAC-06',
-    name: 'Lugbe Centre',
-    areaCouncilId: 'amac',
-    regionId: 'amac',
-    areaCouncilCode: 'AMAC',
-    ward: 'Kabusa',
-    locality: 'Lugbe',
-    venue: 'Federal Housing / Airport Road Collation',
-    coordinatorName: 'Pastor Joshua Idoko',
-    contactPhone: '+234 912 605 3341',
-    target: 600,
-    active: true,
-  },
-  {
-    id: 'cnt-bwr-01',
-    code: 'BWR-01',
-    name: 'Kubwa Centre',
-    areaCouncilId: 'bwari',
-    regionId: 'bwari',
-    areaCouncilCode: 'BWARI',
-    ward: 'Kubwa',
-    locality: 'Kubwa',
-    venue: 'Kubwa Phase 4 / NYSC Junction',
-    coordinatorName: 'Rev. Samuel Bitrus',
-    contactPhone: '+234 803 219 8840',
-    target: 700,
-    active: true,
-  },
-  {
-    id: 'cnt-bwr-02',
-    code: 'BWR-02',
-    name: 'Dutse Alhaji Centre',
-    areaCouncilId: 'bwari',
-    regionId: 'bwari',
-    areaCouncilCode: 'BWARI',
-    ward: 'Dutsen Alhaji',
-    locality: 'Dutse-Alhaji',
-    venue: 'Dutse Alhaji Market Collation Hub',
-    coordinatorName: 'Pastor Amina Musa',
-    contactPhone: '+234 806 512 7639',
-    target: 450,
-    active: true,
-  },
-  {
-    id: 'cnt-bwr-03',
-    code: 'BWR-03',
-    name: 'Bwari Central Centre',
-    areaCouncilId: 'bwari',
-    regionId: 'bwari',
-    areaCouncilCode: 'BWARI',
-    ward: 'Bwari Central',
-    locality: 'Bwari Town',
-    venue: 'Bwari Central Market Collation',
-    coordinatorName: 'Evangelist Bako Shekwolo',
-    contactPhone: '+234 703 145 9902',
-    target: 350,
-    active: true,
-  },
-  {
-    id: 'cnt-gwg-01',
-    code: 'GWG-01',
-    name: 'Gwagwalada Central Centre',
-    areaCouncilId: 'gwagwalada',
-    regionId: 'gwagwalada',
-    areaCouncilCode: 'GWAGWALADA',
-    ward: 'Gwagwalada Central',
-    locality: 'Gwagwalada Town',
-    venue: 'Gwagwalada Park Collation Hub',
-    coordinatorName: 'Pastor Oche Idoko',
-    contactPhone: '+234 813 772 4491',
-    target: 700,
-    active: true,
-  },
-  {
-    id: 'cnt-gwg-02',
-    code: 'GWG-02',
-    name: 'University/Dobi Centre',
-    areaCouncilId: 'gwagwalada',
-    regionId: 'gwagwalada',
-    areaCouncilCode: 'GWAGWALADA',
-    ward: 'Gwako',
-    locality: 'University of Abuja',
-    venue: 'UniAbuja Main Gate / Dobi Area',
-    coordinatorName: 'Sister Ngozi Chukwuma',
-    contactPhone: '+234 901 228 5543',
-    target: 500,
-    active: true,
-  },
-  {
-    id: 'cnt-kuj-01',
-    code: 'KUJ-01',
-    name: 'Kuje Central Centre',
-    areaCouncilId: 'kuje',
-    regionId: 'kuje',
-    areaCouncilCode: 'KUJE',
-    ward: 'Kuje Central',
-    locality: 'Kuje Town',
-    venue: 'Kuje Forest Market Collation',
-    coordinatorName: 'Rev. Ayuba Gwatana',
-    contactPhone: '+234 912 884 1029',
-    target: 1000,
-    active: true,
-  },
-  {
-    id: 'cnt-kwl-01',
-    code: 'KWL-01',
-    name: 'Kwali Central Centre',
-    areaCouncilId: 'kwali',
-    regionId: 'kwali',
-    areaCouncilCode: 'KWALI',
-    ward: 'Kwali Central',
-    locality: 'Kwali Town',
-    venue: 'Kwali Central Town Hall Collation',
-    coordinatorName: 'Pastor Danjuma Sani',
-    contactPhone: '+234 803 667 3120',
-    target: 800,
-    active: true,
-  },
-  {
-    id: 'cnt-abj-01',
-    code: 'ABJ-01',
-    name: 'Abaji Central Centre',
-    areaCouncilId: 'abaji',
-    regionId: 'abaji',
-    areaCouncilCode: 'ABAJI',
-    ward: 'Abaji Central',
-    locality: 'Abaji Town',
-    venue: 'Abaji Roundabout Collation Post',
-    coordinatorName: 'Evangelist Utibe Bassey',
-    contactPhone: '+234 806 910 4452',
-    target: 500,
-    active: true,
-  },
+  // Zonal Church Group (Group Target: 5,000)
+  { id: 'cnt-durumi-01', code: 'ZON-01', name: 'CE Zonal Church Service 1', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Auditorium - Service 1', coordinatorName: 'Pastor Aloy Okei', contactPhone: '+234 803 999 8888', target: 2500, active: true },
+  { id: 'cnt-durumi-02', code: 'ZON-02', name: 'CE Zonal Church Service 2', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Auditorium - Service 2', coordinatorName: 'Pastor David Oyakhilome', contactPhone: '+234 803 200 3002', target: 2000, active: true },
+  { id: 'cnt-durumi-03', code: 'ZON-03', name: 'CE Durumi Central Hub', groupName: 'Zonal Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi Central', venue: 'CE Durumi Central Complex', coordinatorName: 'Pastor Emmanuel', contactPhone: '+234 803 100 2001', target: 500, active: true },
+
+  // Wuye Sub-Group 1 (Group Target: 1,000)
+  { id: 'cnt-wuye1-1', code: 'WY1-01', name: 'CE KBS', groupName: 'Wuye Sub-Group 1', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE KBS Auditorium', coordinatorName: 'Pastor Akin', contactPhone: '+234 803 111 2233', target: 400, active: true },
+  { id: 'cnt-wuye1-2', code: 'WY1-02', name: 'CE Lighthouse', groupName: 'Wuye Sub-Group 1', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE Lighthouse Hall', coordinatorName: 'Pastor Segun', contactPhone: '+234 803 111 2234', target: 280, active: true },
+  { id: 'cnt-wuye1-3', code: 'WY1-03', name: 'CE Koinonia', groupName: 'Wuye Sub-Group 1', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE Koinonia Centre', coordinatorName: 'Pastor Tunde', contactPhone: '+234 803 111 2235', target: 260, active: true },
+  { id: 'cnt-wuye1-4', code: 'WY1-04', name: 'CE KBS 2', groupName: 'Wuye Sub-Group 1', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE KBS 2 Hall', coordinatorName: 'Pastor Femi', contactPhone: '+234 803 111 2236', target: 30, active: true },
+  { id: 'cnt-wuye1-5', code: 'WY1-05', name: 'CE KBS 3', groupName: 'Wuye Sub-Group 1', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE KBS 3 Hall', coordinatorName: 'Pastor Wale', contactPhone: '+234 803 111 2237', target: 30, active: true },
+
+  // Wuye Sub-Group 2 (Group Target: 1,000)
+  { id: 'cnt-wuye2-1', code: 'WY2-01', name: 'CE Express', groupName: 'Wuye Sub-Group 2', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE Express Auditorium', coordinatorName: 'Pastor Chinedu', contactPhone: '+234 803 222 3344', target: 530, active: true },
+  { id: 'cnt-wuye2-2', code: 'WY2-02', name: 'CE Livingspring', groupName: 'Wuye Sub-Group 2', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE Livingspring Hall', coordinatorName: 'Pastor Nonso', contactPhone: '+234 803 222 3345', target: 240, active: true },
+  { id: 'cnt-wuye2-3', code: 'WY2-03', name: 'CE Pacesetters', groupName: 'Wuye Sub-Group 2', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wuye', locality: 'Wuye', venue: 'CE Pacesetters Centre', coordinatorName: 'Pastor Emeka', contactPhone: '+234 803 222 3346', target: 230, active: true },
+
+  // Karmo Group (Group Target: 500)
+  { id: 'cnt-karmo-1', code: 'KRM-01', name: 'CE Karmo', groupName: 'Karmo Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Karmo', locality: 'Karmo', venue: 'CE Karmo Main Hall', coordinatorName: 'Pastor Uche', contactPhone: '+234 803 333 4455', target: 330, active: true },
+  { id: 'cnt-karmo-2', code: 'KRM-02', name: 'CE Dape', groupName: 'Karmo Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Karmo', locality: 'Dape', venue: 'CE Dape Centre', coordinatorName: 'Pastor Kenneth', contactPhone: '+234 803 333 4456', target: 20, active: true },
+  { id: 'cnt-karmo-3', code: 'KRM-03', name: 'CE Karmo 2', groupName: 'Karmo Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Karmo', locality: 'Karmo', venue: 'CE Karmo 2 Hall', coordinatorName: 'Pastor Emma', contactPhone: '+234 803 333 4457', target: 20, active: true },
+  { id: 'cnt-karmo-4', code: 'KRM-04', name: 'CE Kagini', groupName: 'Karmo Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Karmo', locality: 'Kagini', venue: 'CE Kagini Hall', coordinatorName: 'Pastor David', contactPhone: '+234 803 333 4458', target: 130, active: true },
+
+  // Gwarinpa Group (Group Target: 2,000)
+  { id: 'cnt-gwr-1', code: 'GWR-01', name: 'CE Gwarinpa 1', groupName: 'Gwarinpa Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Gwarinpa', locality: 'Gwarinpa', venue: 'CE Gwarinpa Main Auditorium', coordinatorName: 'Pastor Oche', contactPhone: '+234 803 444 5566', target: 1350, active: true },
+  { id: 'cnt-gwr-2', code: 'GWR-02', name: 'CE Precious Place', groupName: 'Gwarinpa Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Gwarinpa', locality: 'Gwarinpa', venue: 'CE Precious Place Hall', coordinatorName: 'Pastor Samuel', contactPhone: '+234 803 444 5567', target: 260, active: true },
+  { id: 'cnt-gwr-3', code: 'GWR-03', name: 'CE Word Arena', groupName: 'Gwarinpa Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Gwarinpa', locality: 'Gwarinpa', venue: 'CE Word Arena', coordinatorName: 'Pastor Daniel', contactPhone: '+234 803 444 5568', target: 110, active: true },
+  { id: 'cnt-gwr-4', code: 'GWR-04', name: 'CE Kagini 2', groupName: 'Gwarinpa Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Gwarinpa', locality: 'Kagini', venue: 'CE Kagini 2 Hall', coordinatorName: 'Pastor Peter', contactPhone: '+234 803 444 5569', target: 100, active: true },
+  { id: 'cnt-gwr-5', code: 'GWR-05', name: 'CE Flourish', groupName: 'Gwarinpa Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Gwarinpa', locality: 'Gwarinpa', venue: 'CE Flourish Hall', coordinatorName: 'Pastor Paul', contactPhone: '+234 803 444 5570', target: 130, active: true },
+  { id: 'cnt-gwr-6', code: 'GWR-06', name: 'CE Karsana', groupName: 'Gwarinpa Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Gwarinpa', locality: 'Karsana', venue: 'CE Karsana Centre', coordinatorName: 'Pastor John', contactPhone: '+234 803 444 5571', target: 50, active: true },
+
+  // Fruitful Vine Sub-Group (Group Target: 500)
+  { id: 'cnt-fv-1', code: 'FV-01', name: 'CE Solution Arena', groupName: 'Fruitful Vine Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Jabi', locality: 'Jabi', venue: 'CE Solution Arena Hall', coordinatorName: 'Pastor Moses', contactPhone: '+234 803 555 6677', target: 100, active: true },
+  { id: 'cnt-fv-2', code: 'FV-02', name: 'CE Jahi', groupName: 'Fruitful Vine Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Jabi', locality: 'Jahi', venue: 'CE Jahi Auditorium', coordinatorName: 'Pastor Joseph', contactPhone: '+234 803 555 6678', target: 200, active: true },
+  { id: 'cnt-fv-3', code: 'FV-03', name: 'CE Kado 2', groupName: 'Fruitful Vine Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Kado', locality: 'Kado', venue: 'CE Kado 2 Centre', coordinatorName: 'Pastor Caleb', contactPhone: '+234 803 555 6679', target: 200, active: true },
+
+  // Kubwa 1 Group (Group Target: 3,000)
+  { id: 'cnt-kb1-1', code: 'KB1-01', name: 'CE Kubwa', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa', venue: 'CE Kubwa Main Auditorium', coordinatorName: 'Pastor Solomon', contactPhone: '+234 803 666 7788', target: 1550, active: true },
+  { id: 'cnt-kb1-2', code: 'KB1-02', name: 'CE Katampe Ext', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Katampe Extension', venue: 'CE Katampe Ext Hall', coordinatorName: 'Pastor Victor', contactPhone: '+234 803 666 7789', target: 500, active: true },
+  { id: 'cnt-kb1-3', code: 'KB1-03', name: 'CE Kubwa 3', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Phase 3', venue: 'CE Kubwa 3 Hall', coordinatorName: 'Pastor Mark', contactPhone: '+234 803 666 7790', target: 100, active: true },
+  { id: 'cnt-kb1-4', code: 'KB1-04', name: 'CE Kubwa 4', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Phase 4', venue: 'CE Kubwa 4 Hall', coordinatorName: 'Pastor Luke', contactPhone: '+234 803 666 7791', target: 100, active: true },
+  { id: 'cnt-kb1-5', code: 'KB1-05', name: 'CE Kubwa 5', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Phase 5', venue: 'CE Kubwa 5 Hall', coordinatorName: 'Pastor Matthew', contactPhone: '+234 803 666 7792', target: 100, active: true },
+  { id: 'cnt-kb1-6', code: 'KB1-06', name: 'CE Kubwa 6', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Gado Nasko', venue: 'CE Kubwa 6 Hall', coordinatorName: 'Pastor Timothy', contactPhone: '+234 803 666 7793', target: 100, active: true },
+  { id: 'cnt-kb1-7', code: 'KB1-07', name: 'CE Kubwa 8', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Byazhin Rd', venue: 'CE Kubwa 8 Hall', coordinatorName: 'Pastor Stephen', contactPhone: '+234 803 666 7794', target: 50, active: true },
+  { id: 'cnt-kb1-8', code: 'KB1-08', name: 'CE Kubwa 9', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Site 2', venue: 'CE Kubwa 9 Hall', coordinatorName: 'Pastor Barnabas', contactPhone: '+234 803 666 7795', target: 100, active: true },
+  { id: 'cnt-kb1-9', code: 'KB1-09', name: 'CE Kubwa 10', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Extension', venue: 'CE Kubwa 10 Hall', coordinatorName: 'Pastor Gabriel', contactPhone: '+234 803 666 7796', target: 150, active: true },
+  { id: 'cnt-kb1-10', code: 'KB1-10', name: 'CE Mpape', groupName: 'Kubwa 1 Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Mpape', locality: 'Mpape Hills', venue: 'CE Mpape Auditorium', coordinatorName: 'Pastor Michael', contactPhone: '+234 803 666 7797', target: 50, active: true },
+  { id: 'cnt-kb1-11', code: 'KB1-11', name: 'CE Mabuchi', groupName: 'Kubwa 1 Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Mabushi', locality: 'Mabushi', venue: 'CE Mabushi Hall', coordinatorName: 'Pastor Philip', contactPhone: '+234 803 666 7798', target: 100, active: true },
+  { id: 'cnt-kb1-12', code: 'KB1-12', name: 'CE Kaba', groupName: 'Kubwa 1 Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kaba', locality: 'Kaba', venue: 'CE Kaba Village Centre', coordinatorName: 'Pastor Andrew', contactPhone: '+234 803 666 7799', target: 100, active: true },
+
+  // Kubwa 2 Sub-Group (Group Target: 500)
+  { id: 'cnt-kb2-1', code: 'KB2-01', name: 'CE Kubwa Extension', groupName: 'Kubwa 2 Sub-Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Extension', venue: 'CE Kubwa Ext Hall', coordinatorName: 'Pastor Isaac', contactPhone: '+234 803 777 8899', target: 100, active: true },
+  { id: 'cnt-kb2-2', code: 'KB2-02', name: 'CE Channel 8', groupName: 'Kubwa 2 Sub-Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa Channel 8', venue: 'CE Channel 8 Hall', coordinatorName: 'Pastor James', contactPhone: '+234 803 777 8900', target: 100, active: true },
+  { id: 'cnt-kb2-3', code: 'KB2-03', name: 'CE Guidna', groupName: 'Kubwa 2 Sub-Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Guidna', locality: 'Guidna', venue: 'CE Guidna Centre', coordinatorName: 'Pastor Nathan', contactPhone: '+234 803 777 8901', target: 100, active: true },
+  { id: 'cnt-kb2-4', code: 'KB2-04', name: 'CE Grace and Glory', groupName: 'Kubwa 2 Sub-Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Kubwa', venue: 'CE Grace & Glory Hall', coordinatorName: 'Pastor Elijah', contactPhone: '+234 803 777 8902', target: 100, active: true },
+  { id: 'cnt-kb2-5', code: 'KB2-05', name: 'CE Obasanjo Road', groupName: 'Kubwa 2 Sub-Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Obasanjo Road', venue: 'CE Obasanjo Rd Hall', coordinatorName: 'Pastor Ezra', contactPhone: '+234 803 777 8903', target: 100, active: true },
+
+  // Bwari Group (Group Target: 2,000)
+  { id: 'cnt-bwr-1', code: 'BWR-01', name: 'CE Bwari Main', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Bwari Central', locality: 'Bwari Town', venue: 'CE Bwari Main Hall', coordinatorName: 'Pastor Joshua', contactPhone: '+234 803 888 9900', target: 1000, active: true },
+  { id: 'cnt-bwr-2', code: 'BWR-02', name: 'CE Kuchiko', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kuchiko', locality: 'Kuchiko', venue: 'CE Kuchiko Centre', coordinatorName: 'Pastor Nehemiah', contactPhone: '+234 803 888 9901', target: 200, active: true },
+  { id: 'cnt-bwr-3', code: 'BWR-03', name: 'CE Piawe', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Piawe', locality: 'Piawe', venue: 'CE Piawe Hall', coordinatorName: 'Pastor Amos', contactPhone: '+234 803 888 9902', target: 100, active: true },
+  { id: 'cnt-bwr-4', code: 'BWR-04', name: 'CE Peyi', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Peyi', locality: 'Peyi', venue: 'CE Peyi Centre', coordinatorName: 'Pastor Obadiah', contactPhone: '+234 803 888 9903', target: 200, active: true },
+  { id: 'cnt-bwr-5', code: 'BWR-05', name: 'CE SCC', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Bwari', locality: 'SCC Road Bwari', venue: 'CE SCC Hall', coordinatorName: 'Pastor Zechariah', contactPhone: '+234 803 888 9904', target: 50, active: true },
+  { id: 'cnt-bwr-6', code: 'BWR-06', name: 'CE Kogo', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kogo', locality: 'Kogo', venue: 'CE Kogo Centre', coordinatorName: 'Pastor Micah', contactPhone: '+234 803 888 9905', target: 250, active: true },
+  { id: 'cnt-bwr-7', code: 'BWR-07', name: 'CE Lambent', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Bwari', locality: 'Lambent Bwari', venue: 'CE Lambent Hall', coordinatorName: 'Pastor Joel', contactPhone: '+234 803 888 9906', target: 100, active: true },
+  { id: 'cnt-bwr-8', code: 'BWR-08', name: 'CE Garam', groupName: 'Bwari Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Garam', locality: 'Garam', venue: 'CE Garam Centre', coordinatorName: 'Pastor Habakkuk', contactPhone: '+234 803 888 9907', target: 100, active: true },
+
+  // New Horizon Group (Group Target: 2,000)
+  { id: 'cnt-nh-1', code: 'NH-01', name: 'CE Ushafa', groupName: 'New Horizon Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Ushafa', locality: 'Ushafa', venue: 'CE Ushafa Auditorium', coordinatorName: 'Pastor Zephaniah', contactPhone: '+234 803 999 0011', target: 1350, active: true },
+  { id: 'cnt-nh-2', code: 'NH-02', name: 'CE Kogo 3', groupName: 'New Horizon Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kogo', locality: 'Kogo 3', venue: 'CE Kogo 3 Hall', coordinatorName: 'Pastor Haggai', contactPhone: '+234 803 999 0012', target: 150, active: true },
+  { id: 'cnt-nh-3', code: 'NH-03', name: 'CE Dutse Zone 3', groupName: 'New Horizon Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Dutse', locality: 'Dutse Zone 3', venue: 'CE Dutse Zone 3 Hall', coordinatorName: 'Pastor Nahum', contactPhone: '+234 803 999 0013', target: 150, active: true },
+  { id: 'cnt-nh-4', code: 'NH-04', name: 'CE Dutse', groupName: 'New Horizon Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Dutse', locality: 'Dutse Alhaji', venue: 'CE Dutse Main Hall', coordinatorName: 'Pastor Habakkuk', contactPhone: '+234 803 999 0014', target: 250, active: true },
+  { id: 'cnt-nh-5', code: 'NH-05', name: 'CE Guto', groupName: 'New Horizon Group', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Guto', locality: 'Guto', venue: 'CE Guto Centre', coordinatorName: 'Pastor Jonah', contactPhone: '+234 803 999 0015', target: 100, active: true },
+
+  // Gwagwalada 1 Group (Group Target: 2,000)
+  { id: 'cnt-gwg1-1', code: 'GW1-01', name: 'CE Gwagwalada 1', groupName: 'Gwagwalada 1 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Gwagwalada', locality: 'Gwagwalada Central', venue: 'CE Gwagwalada 1 Auditorium', coordinatorName: 'Pastor Jeremiah', contactPhone: '+234 804 111 2200', target: 1000, active: true },
+  { id: 'cnt-gwg1-2', code: 'GW1-02', name: 'CE Zuba', groupName: 'Gwagwalada 1 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Zuba', locality: 'Zuba Junction', venue: 'CE Zuba Hall', coordinatorName: 'Pastor Obadiah', contactPhone: '+234 804 111 2201', target: 100, active: true },
+  { id: 'cnt-gwg1-3', code: 'GW1-03', name: 'CE Gwagwalada 4', groupName: 'Gwagwalada 1 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Gwagwalada', locality: 'Gwagwalada Phase 4', venue: 'CE Gwagwalada 4 Hall', coordinatorName: 'Pastor Amos', contactPhone: '+234 804 111 2202', target: 50, active: true },
+  { id: 'cnt-gwg1-4', code: 'GW1-04', name: 'CE Gwagwalada 7', groupName: 'Gwagwalada 1 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Gwagwalada', locality: 'Gwagwalada', venue: 'CE Gwagwalada 7 Hall', coordinatorName: 'Pastor Micah', contactPhone: '+234 804 111 2203', target: 50, active: true },
+  { id: 'cnt-gwg1-5', code: 'GW1-05', name: 'CE Tunga Maje', groupName: 'Gwagwalada 1 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Tunga Maje', locality: 'Tunga Maje', venue: 'CE Tunga Maje Centre', coordinatorName: 'Pastor Nahum', contactPhone: '+234 804 111 2204', target: 750, active: true },
+  { id: 'cnt-gwg1-6', code: 'GW1-06', name: 'CE Kwali', groupName: 'Gwagwalada 1 Group', areaCouncilId: 'kwali', regionId: 'kwali', areaCouncilCode: 'KWL', ward: 'Kwali', locality: 'Kwali Town', venue: 'CE Kwali Hall', coordinatorName: 'Pastor Habakkuk', contactPhone: '+234 804 111 2205', target: 50, active: true },
+
+  // Gwagwalada 2 Group (Group Target: 2,000)
+  { id: 'cnt-gwg2-1', code: 'GW2-01', name: 'CE Gwagwalada 2', groupName: 'Gwagwalada 2 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Gwagwalada', locality: 'Gwagwalada Area 2', venue: 'CE Gwagwalada 2 Auditorium', coordinatorName: 'Pastor Danjuma', contactPhone: '+234 804 222 3300', target: 1000, active: true },
+  { id: 'cnt-gwg2-2', code: 'GW2-02', name: 'CE Gwagwalada 3', groupName: 'Gwagwalada 2 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Gwagwalada', locality: 'Gwagwalada Area 3', venue: 'CE Gwagwalada 3 Hall', coordinatorName: 'Pastor Sani', contactPhone: '+234 804 222 3301', target: 400, active: true },
+  { id: 'cnt-gwg2-3', code: 'GW2-03', name: 'CE Anangada', groupName: 'Gwagwalada 2 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Anangada', locality: 'Anangada', venue: 'CE Anangada Centre', coordinatorName: 'Pastor Usman', contactPhone: '+234 804 222 3302', target: 250, active: true },
+  { id: 'cnt-gwg2-4', code: 'GW2-04', name: 'CE Gwagwalada 6', groupName: 'Gwagwalada 2 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Gwagwalada', locality: 'Gwagwalada Phase 2', venue: 'CE Gwagwalada 6 Hall', coordinatorName: 'Pastor Ibrahim', contactPhone: '+234 804 222 3303', target: 250, active: true },
+  { id: 'cnt-gwg2-5', code: 'GW2-05', name: 'CE Chukunku', groupName: 'Gwagwalada 2 Group', areaCouncilId: 'gwagwalada', regionId: 'gwagwalada', areaCouncilCode: 'GWG', ward: 'Chukunku', locality: 'Chukunku', venue: 'CE Chukunku Centre', coordinatorName: 'Pastor Musa', contactPhone: '+234 804 222 3304', target: 100, active: true },
+
+  // Kuje Group (Group Target: 2,000)
+  { id: 'cnt-kuje-1', code: 'KUJ-01', name: 'CE Kuje', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Central', venue: 'CE Kuje Main Auditorium', coordinatorName: 'Pastor Ayuba', contactPhone: '+234 805 111 4400', target: 880, active: true },
+  { id: 'cnt-kuje-2', code: 'KUJ-02', name: 'CE Kuje 2', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Phase 2', venue: 'CE Kuje 2 Hall', coordinatorName: 'Pastor Bitrus', contactPhone: '+234 805 111 4401', target: 380, active: true },
+  { id: 'cnt-kuje-3', code: 'KUJ-03', name: 'CE Kuje 3', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Pegi Rd', venue: 'CE Kuje 3 Hall', coordinatorName: 'Pastor Audu', contactPhone: '+234 805 111 4402', target: 130, active: true },
+  { id: 'cnt-kuje-4', code: 'KUJ-04', name: 'CE Kuje 4', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Giyam', venue: 'CE Kuje 4 Hall', coordinatorName: 'Pastor Tanko', contactPhone: '+234 805 111 4403', target: 150, active: true },
+  { id: 'cnt-kuje-5', code: 'KUJ-05', name: 'CE Kuje 5', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Gaube', venue: 'CE Kuje 5 Hall', coordinatorName: 'Pastor Bako', contactPhone: '+234 805 111 4404', target: 130, active: true },
+  { id: 'cnt-kuje-6', code: 'KUJ-06', name: 'CE Iddo Sarki', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Iddo', locality: 'Iddo Sarki', venue: 'CE Iddo Sarki Centre', coordinatorName: 'Pastor Yemi', contactPhone: '+234 805 111 4405', target: 110, active: true },
+  { id: 'cnt-kuje-7', code: 'KUJ-07', name: 'CE Kuje 6', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Pasali', venue: 'CE Kuje 6 Hall', coordinatorName: 'Pastor Femi', contactPhone: '+234 805 111 4406', target: 120, active: true },
+  { id: 'cnt-kuje-8', code: 'KUJ-08', name: 'CE Kuje 7', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Rubochi', venue: 'CE Kuje 7 Hall', coordinatorName: 'Pastor Kunle', contactPhone: '+234 805 111 4407', target: 50, active: true },
+  { id: 'cnt-kuje-9', code: 'KUJ-09', name: 'CE Kuje 8', groupName: 'Kuje Group', areaCouncilId: 'kuje', regionId: 'kuje', areaCouncilCode: 'KUJ', ward: 'Kuje', locality: 'Kuje Kwaku', venue: 'CE Kuje 8 Hall', coordinatorName: 'Pastor Tunde', contactPhone: '+234 805 111 4408', target: 50, active: true },
+
+  // Lokogoma Group (Group Target: 2,000)
+  { id: 'cnt-lkg-1', code: 'LKG-01', name: 'CE Lokogoma', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lokogoma', locality: 'Lokogoma', venue: 'CE Lokogoma Main Auditorium', coordinatorName: 'Pastor Chinedu', contactPhone: '+234 806 222 5500', target: 1100, active: true },
+  { id: 'cnt-lkg-2', code: 'LKG-02', name: 'CE Kabusa', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Kabusa', locality: 'Kabusa', venue: 'CE Kabusa Centre', coordinatorName: 'Pastor Kelechi', contactPhone: '+234 806 222 5501', target: 100, active: true },
+  { id: 'cnt-lkg-3', code: 'LKG-03', name: 'CE Durumi', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Durumi', locality: 'Durumi', venue: 'CE Durumi Centre', coordinatorName: 'Pastor Emmanuel', contactPhone: '+234 806 222 5502', target: 100, active: true },
+  { id: 'cnt-lkg-4', code: 'LKG-04', name: 'CE Apo', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Apo', locality: 'Apo Resettlement', venue: 'CE Apo Hall', coordinatorName: 'Pastor Nnamdi', contactPhone: '+234 806 222 5503', target: 100, active: true },
+  { id: 'cnt-lkg-5', code: 'LKG-05', name: 'CE Apo Dutse', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Apo', locality: 'Apo Dutse', venue: 'CE Apo Dutse Hall', coordinatorName: 'Pastor Ifeanyi', contactPhone: '+234 806 222 5504', target: 100, active: true },
+  { id: 'cnt-lkg-6', code: 'LKG-06', name: 'CE Wumba', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Wumba', locality: 'Wumba', venue: 'CE Wumba Centre', coordinatorName: 'Pastor Obinna', contactPhone: '+234 806 222 5505', target: 50, active: true },
+  { id: 'cnt-lkg-7', code: 'LKG-07', name: 'CE Gbuduwyi', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lokogoma', locality: 'Gbuduwyi', venue: 'CE Gbuduwyi Centre', coordinatorName: 'Pastor Ugo', contactPhone: '+234 806 222 5506', target: 100, active: true },
+  { id: 'cnt-lkg-8', code: 'LKG-08', name: 'CE Damagaza', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lokogoma', locality: 'Damagaza', venue: 'CE Damagaza Hall', coordinatorName: 'Pastor Chibuzor', contactPhone: '+234 806 222 5507', target: 100, active: true },
+  { id: 'cnt-lkg-9', code: 'LKG-09', name: 'CE Pigbakasa', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lokogoma', locality: 'Pigbakasa', venue: 'CE Pigbakasa Hall', coordinatorName: 'Pastor Emeka', contactPhone: '+234 806 222 5508', target: 100, active: true },
+  { id: 'cnt-lkg-10', code: 'LKG-10', name: 'CE City of David', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lokogoma', locality: 'Lokogoma Extension', venue: 'CE City of David Hall', coordinatorName: 'Pastor Kenneth', contactPhone: '+234 806 222 5509', target: 100, active: true },
+  { id: 'cnt-lkg-11', code: 'LKG-11', name: 'CE Citadel of Grace', groupName: 'Lokogoma Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lokogoma', locality: 'Lokogoma', venue: 'CE Citadel of Grace', coordinatorName: 'Pastor David', contactPhone: '+234 806 222 5510', target: 50, active: true },
+
+  // Dei Dei Group (Group Target: 2,000)
+  { id: 'cnt-dei-1', code: 'DEI-01', name: 'CE Deidei 2', groupName: 'Dei Dei Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Deidei', locality: 'Deidei', venue: 'CE Deidei Main Auditorium', coordinatorName: 'Pastor Ezekiel', contactPhone: '+234 807 333 6600', target: 2000, active: true },
+
+  // Airport Road Sub-Group (Group Target: 1,000)
+  { id: 'cnt-arp-1', code: 'ARP-01', name: 'CE Airport Road', groupName: 'Airport Road Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lugbe', locality: 'Airport Road Lugbe', venue: 'CE Airport Road Auditorium', coordinatorName: 'Pastor Gideon', contactPhone: '+234 808 444 7700', target: 420, active: true },
+  { id: 'cnt-arp-2', code: 'ARP-02', name: 'CE Airport Road 2', groupName: 'Airport Road Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lugbe', locality: 'Lugbe Federal Housing', venue: 'CE Airport Road 2 Hall', coordinatorName: 'Pastor Samson', contactPhone: '+234 808 444 7701', target: 290, active: true },
+  { id: 'cnt-arp-3', code: 'ARP-03', name: 'CE Airport Road 4', groupName: 'Airport Road Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lugbe', locality: 'Lugbe Pyakassa', venue: 'CE Airport Road 4 Hall', coordinatorName: 'Pastor Jonathan', contactPhone: '+234 808 444 7702', target: 30, active: true },
+  { id: 'cnt-arp-4', code: 'ARP-04', name: 'CE Kapwa', groupName: 'Airport Road Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Lugbe', locality: 'Kapwa Village', venue: 'CE Kapwa Centre', coordinatorName: 'Pastor Jeremiah', contactPhone: '+234 808 444 7703', target: 260, active: true },
+
+  // Byazhin Church (Church Target: 500)
+  { id: 'cnt-byz-1', code: 'BYZ-01', name: 'CE Byazhin', groupName: 'Byazhin Church', areaCouncilId: 'bwari', regionId: 'bwari', areaCouncilCode: 'BWR', ward: 'Kubwa', locality: 'Byazhin Kubwa', venue: 'CE Byazhin Auditorium', coordinatorName: 'Pastor Raphael', contactPhone: '+234 809 555 8800', target: 500, active: true },
+
+  // Dutse Makaranta Sub-Group (Group Target: 1,000)
+  { id: 'cnt-dts-1', code: 'DTS-01', name: 'CE Dutse Makaranta', groupName: 'Dutse Makaranta Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Dutse', locality: 'Dutse Makaranta', venue: 'CE Dutse Makaranta Auditorium', coordinatorName: 'Pastor Zachariah', contactPhone: '+234 810 666 9900', target: 740, active: true },
+  { id: 'cnt-dts-2', code: 'DTS-02', name: 'CE Garki 1', groupName: 'Dutse Makaranta Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Garki', locality: 'Garki Area 1', venue: 'CE Garki 1 Hall', coordinatorName: 'Pastor Nath', contactPhone: '+234 810 666 9901', target: 100, active: true },
+  { id: 'cnt-dts-3', code: 'DTS-03', name: 'CE Springtime', groupName: 'Dutse Makaranta Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Dutse', locality: 'Dutse Springtime', venue: 'CE Springtime Hall', coordinatorName: 'Pastor Ezra', contactPhone: '+234 810 666 9902', target: 80, active: true },
+  { id: 'cnt-dts-4', code: 'DTS-04', name: 'CE New Jerusalem', groupName: 'Dutse Makaranta Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Dutse', locality: 'New Jerusalem Dutse', venue: 'CE New Jerusalem Hall', coordinatorName: 'Pastor Nehemiah', contactPhone: '+234 810 666 9903', target: 50, active: true },
+  { id: 'cnt-dts-5', code: 'DTS-05', name: 'CE Mbuko', groupName: 'Dutse Makaranta Sub-Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Dutse', locality: 'Mbuko', venue: 'CE Mbuko Centre', coordinatorName: 'Pastor Amos', contactPhone: '+234 810 666 9904', target: 30, active: true },
+
+  // CE Wealthy Place (Church Target: 500)
+  { id: 'cnt-wp-1', code: 'WP-01', name: 'CE Wealthy Place', groupName: 'CE Wealthy Place', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'Maitama', locality: 'Maitama Extension', venue: 'CE Wealthy Place Auditorium', coordinatorName: 'Pastor Abraham', contactPhone: '+234 811 777 0011', target: 500, active: true },
+
+  // CE City Church (Group Target: 1,000)
+  { id: 'cnt-cc-1', code: 'CC-01', name: 'CE City Church', groupName: 'CE City Church', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'City Centre', locality: 'Central Area Abuja', venue: 'CE City Church Main Auditorium', coordinatorName: 'Pastor Isaac', contactPhone: '+234 812 888 1122', target: 1000, active: true },
+
+  // Teens Church Group (Group Target: 1,500)
+  { id: 'cnt-tc-1', code: 'TC-01', name: 'Teens Church', groupName: 'Teens Church Group', areaCouncilId: 'amac', regionId: 'amac', areaCouncilCode: 'AMAC', ward: 'City Centre', locality: 'CEAZ1 Zonal Youth Centre', venue: 'Teens Church Zonal Auditorium', coordinatorName: 'Pastor Youth', contactPhone: '+234 813 999 2233', target: 1500, active: true },
 ];
 
 // ==========================================
-// CAMPAIGN DEFINITION (ABUJA, FCT)
+// CAMPAIGN DEFINITION (RON 2026 - CEAZ1)
 // ==========================================
 export const INITIAL_CAMPAIGN: Campaign = {
-  id: 'camp-harvest-10k-fct-2026',
-  name: 'Harvest 10K - FCT Abuja Campaign',
-  target: 10000,
-  startDate: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(),
-  endDate: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
+  id: 'camp-ron-2026-ceaz1-40k',
+  name: 'RON 2026 - CEAZ1 (Christ Embassy Abuja Zone 1) 40,000 Souls Target',
+  target: 40000,
+  startDate: '2026-10-01T09:00:00.000+01:00', // 9:00 AM October 1st (WAT)
+  endDate: '2026-10-02T23:59:59.000+01:00',   // 12:00 Midnight October 2nd (WAT)
   verse: 'The harvest truly is great, but the labourers are few: pray ye therefore the Lord of the harvest. — Luke 10:2',
   verificationRequired: true,
   hideIndividualLeaderboard: false,
-  announcement: 'Abuja Collation Live: AMAC, Bwari, Gwagwalada, Kuje, Kwali, and Abaji reporting.',
+  announcement: 'RON 2026 CEAZ1 24-Hour Campaign: 9:00 AM October 1st to 12:00 Midnight October 2nd across all 20 Groups & 96 Churches.',
 };
 
 // ==========================================
@@ -455,6 +389,13 @@ export class DataService {
   private centres: Centre[] = [...INITIAL_CENTRES];
   private soulRecords: SoulRecord[] = [];
   private batches: Batch[] = [];
+  private collationMode: CollationMode = this.loadCollationMode();
+  private demoSoulRecords: SoulRecord[] = [];
+  private demoBatches: Batch[] = [];
+  private liveSoulRecords: SoulRecord[] = this.loadLiveSouls();
+  private liveBatches: Batch[] = this.loadLiveBatches();
+  private liveSoulsUnsub: (() => void) | null = null;
+  private liveBatchesUnsub: (() => void) | null = null;
   private tickerItems: TickerSubmission[] = [];
   private auditLogs: AuditLogEntry[] = [];
   private subscribers: Set<() => void> = new Set();
@@ -705,7 +646,7 @@ export class DataService {
             pcfName: b.winnerPcf || 'Haven PCF',
             churchName: 'Abuja Field Ministry Hub',
             roleTitle: 'Field Coordinator / Team Leader',
-            registeredAt: b.timestamp,
+            registeredAt: b.submittedAt || new Date().toISOString(),
           });
         }
       }
@@ -827,6 +768,147 @@ export class DataService {
     });
   }
 
+  private loadCollationMode(): CollationMode {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem('ceaz1_collation_mode');
+        if (stored === 'live' || stored === 'demo') return stored as CollationMode;
+      }
+    } catch (e) {
+      console.warn('[DataService] Error reading collation mode:', e);
+    }
+    // Default to clean live baseline ("everything else is clean, so from zero and so on")
+    return 'live';
+  }
+
+  private loadLiveSouls(): SoulRecord[] {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem('ceaz1_live_souls');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[DataService] Error reading live souls:', e);
+    }
+    return [];
+  }
+
+  private loadLiveBatches(): Batch[] {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem('ceaz1_live_batches');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[DataService] Error reading live batches:', e);
+    }
+    return [];
+  }
+
+  public persistLiveSouls(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('ceaz1_live_souls', JSON.stringify(this.liveSoulRecords));
+      }
+    } catch (e) {
+      console.warn('[DataService] Error saving live souls:', e);
+    }
+  }
+
+  public persistLiveBatches(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('ceaz1_live_batches', JSON.stringify(this.liveBatches));
+      }
+    } catch (e) {
+      console.warn('[DataService] Error saving live batches:', e);
+    }
+  }
+
+  public getCollationMode(): CollationMode {
+    return this.collationMode;
+  }
+
+  public setCollationMode(newMode: CollationMode): void {
+    if (this.collationMode === newMode) return;
+
+    if (newMode === 'live') {
+      // Store current demo state
+      this.demoSoulRecords = [...this.soulRecords];
+      this.demoBatches = [...this.batches];
+      // Switch active data to live
+      this.collationMode = 'live';
+      this.soulRecords = this.liveSoulRecords;
+      this.batches = this.liveBatches;
+      this.setupLiveListeners();
+    } else {
+      // Store current live state
+      this.liveSoulRecords = [...this.soulRecords];
+      this.liveBatches = [...this.batches];
+      this.persistLiveSouls();
+      this.persistLiveBatches();
+      if (this.liveSoulsUnsub) {
+        this.liveSoulsUnsub();
+        this.liveSoulsUnsub = null;
+      }
+      if (this.liveBatchesUnsub) {
+        this.liveBatchesUnsub();
+        this.liveBatchesUnsub = null;
+      }
+      // Switch active data to demo
+      this.collationMode = 'demo';
+      this.soulRecords = this.demoSoulRecords;
+      this.batches = this.demoBatches;
+    }
+
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('ceaz1_collation_mode', this.collationMode);
+      }
+    } catch (e) {
+      console.warn('[DataService] Error persisting collation mode:', e);
+    }
+
+    this.notifySubscribers();
+  }
+
+  public resetDemoData(): void {
+    this.soulRecords = [];
+    this.batches = [];
+    this.seedInitialData();
+    this.demoSoulRecords = [...this.soulRecords];
+    this.demoBatches = [...this.batches];
+    if (this.collationMode === 'demo') {
+      this.notifySubscribers();
+    }
+  }
+
+  public clearLiveData(): void {
+    this.liveSoulRecords = [];
+    this.liveBatches = [];
+    this.persistLiveSouls();
+    this.persistLiveBatches();
+    if (this.collationMode === 'live') {
+      this.soulRecords = [];
+      this.batches = [];
+      this.notifySubscribers();
+    }
+  }
+
+  public getLiveRecordsCount(): number {
+    return this.liveSoulRecords.length;
+  }
+
+  public getDemoRecordsCount(): number {
+    return this.demoSoulRecords.length;
+  }
+
   public saveSoulWinnerProfile(profile: SoulWinnerProfile): void {
     this.soulWinnerProfile = {
       ...profile,
@@ -844,56 +926,46 @@ export class DataService {
 
   constructor() {
     this.seedInitialData();
+    this.demoSoulRecords = [...this.soulRecords];
+    this.demoBatches = [...this.batches];
+    if (this.collationMode === 'live') {
+      this.soulRecords = this.liveSoulRecords;
+      this.batches = this.liveBatches;
+    }
     this.seedTestimonies();
     this.initOfflineQueue();
     this.initMediaDB();
     this.initFirebaseSync();
   }
 
+  private setupLiveListeners() {
+    if (this.liveSoulsUnsub) this.liveSoulsUnsub();
+    if (this.liveBatchesUnsub) this.liveBatchesUnsub();
+
+    this.liveSoulsUnsub = firebaseSync.subscribeToSouls((remoteSouls) => {
+      if (this.collationMode !== 'live' || !remoteSouls) return;
+      this.liveSoulRecords = remoteSouls;
+      this.soulRecords = this.liveSoulRecords;
+      this.persistLiveSouls();
+      this.notifySubscribers();
+    }, true);
+
+    this.liveBatchesUnsub = firebaseSync.subscribeToBatches((remoteBatches) => {
+      if (this.collationMode !== 'live' || !remoteBatches) return;
+      this.liveBatches = remoteBatches;
+      this.batches = this.liveBatches;
+      this.persistLiveBatches();
+      this.notifySubscribers();
+    }, true);
+  }
+
   private initFirebaseSync() {
     try {
-      // 1. Initial baseline sync if remote is fresh
-      setTimeout(() => {
-        firebaseSync.initialBulkSync(this.soulRecords, this.batches);
-      }, 3000);
+      if (this.collationMode === 'live') {
+        this.setupLiveListeners();
+      }
 
-      // 2. Real-time Soul Records Listener
-      firebaseSync.subscribeToSouls((remoteSouls) => {
-        if (!remoteSouls || remoteSouls.length === 0) return;
-        let hasNew = false;
-        remoteSouls.forEach((remote) => {
-          const idx = this.soulRecords.findIndex((r) => r.id === remote.id);
-          if (idx >= 0) {
-            this.soulRecords[idx] = { ...this.soulRecords[idx], ...remote };
-          } else {
-            this.soulRecords.unshift(remote);
-            hasNew = true;
-          }
-        });
-        if (hasNew) {
-          this.notifySubscribers();
-        }
-      });
-
-      // 3. Real-time Batches Listener
-      firebaseSync.subscribeToBatches((remoteBatches) => {
-        if (!remoteBatches || remoteBatches.length === 0) return;
-        let hasNew = false;
-        remoteBatches.forEach((rb) => {
-          const idx = this.batches.findIndex((b) => b.id === rb.id);
-          if (idx >= 0) {
-            this.batches[idx] = { ...this.batches[idx], ...rb };
-          } else {
-            this.batches.unshift(rb);
-            hasNew = true;
-          }
-        });
-        if (hasNew) {
-          this.notifySubscribers();
-        }
-      });
-
-      // 4. Real-time Soul Winner Profiles Listener
+      // Real-time Soul Winner Profiles Listener
       firebaseSync.subscribeToWinners((remoteWinners) => {
         if (!remoteWinners || remoteWinners.length === 0) return;
         let hasNew = false;
@@ -912,7 +984,7 @@ export class DataService {
         }
       });
     } catch (err) {
-      console.warn('[DataService] Error connecting to Firebase real-time sync:', err);
+      console.warn('[DataService] initFirebaseSync setup deferred:', err);
     }
   }
 
@@ -1090,18 +1162,22 @@ export class DataService {
           residentialDistrict: resChoice.district,
           residentialAddress: resChoice.address,
           residentialAreaCouncil: resChoice.council,
+          smsGatewayStatus: 'delivered',
+          smsDeliveryReceiptId: `DLR-${(resChoice.council || 'MTN').slice(0,3)}-${100000 + i}`,
+          smsCarrier: i % 4 === 0 ? 'MTN Nigeria' : i % 4 === 1 ? 'Airtel Nigeria' : i % 4 === 2 ? 'Glo Mobile' : '9mobile',
+          smsDeliveredAt: recordTime.toISOString(),
+          verificationMethod: 'sms',
         });
       }
     });
 
-    // Seed realistic pending approval queue entries
+    // Seed realistic pending approval queue entries (Undelivered / DND SMS Gateway)
     this.batches.push({
       id: `batch-pending-1`,
-      centreId: 'cnt-amac-02',
+      centreId: 'cnt-wuye1-2',
       submittedByName: 'Evangelist Barnabas Danjuma',
       winnerPhone: '+2348031122334',
       winnerCell: 'Grace Cell',
-      winnerPcf: 'Haven PCF',
       sessionLabel: 'Wuse Market Afternoon Blitz',
       count: 65,
       newConverts: 42,
@@ -1114,7 +1190,7 @@ export class DataService {
 
     this.soulRecords.push({
       id: `soul-pending-1`,
-      centreId: 'cnt-gwg-02',
+      centreId: 'cnt-gwr-1',
       firstName: 'Ibrahim',
       lastName: 'Musa',
       phone: '+2348065127639',
@@ -1129,20 +1205,23 @@ export class DataService {
       wonByName: 'Sister Chiamaka Nnamdi',
       winnerPhone: '+2348065127639',
       winnerCell: 'Royalty Cell',
-      winnerPcf: 'Kings PCF',
-      winnerChurch: 'Kubwa Centre',
+      winnerChurch: 'CE Gwarinpa 1',
       wonAt: new Date(now - 8 * 60000).toISOString(),
-      followUpChurch: 'Dunamis International Gospel Centre (Glory Dome)',
+      followUpChurch: 'CE Gwarinpa 1',
       followUpStatus: 'not_started',
       consentGiven: true,
       notes: 'University student surrendered life to Christ during lunch blitz.',
       status: 'pending',
       detailsPending: false,
+      smsGatewayStatus: 'dnd_blocked',
+      smsCarrier: 'MTN Nigeria',
+      smsFailureReason: 'Active DND on MTN Network (Bypass Route Pending)',
+      smsDispatchedAt: new Date(now - 8 * 60000).toISOString(),
     });
 
     this.soulRecords.push({
       id: `soul-pending-2`,
-      centreId: 'cnt-amac-01',
+      centreId: 'cnt-wuye1-1',
       firstName: 'Amina',
       lastName: 'Bello',
       phone: knownExistingPhone,
@@ -1155,13 +1234,76 @@ export class DataService {
       residentialAreaCouncil: 'AMAC',
       decisionType: 'rededication',
       wonByName: 'Pastor Emmanuel Adeyemi',
+      winnerChurch: 'CE KBS',
       wonAt: new Date(now - 18 * 60000).toISOString(),
-      followUpChurch: 'The Redeemed Christian Church of God (RCCG Central Parish)',
+      followUpChurch: 'CE KBS',
       followUpStatus: 'not_started',
       consentGiven: true,
       notes: 'Potential duplicate phone number detected across centres.',
       status: 'pending',
       detailsPending: false,
+      smsGatewayStatus: 'undelivered',
+      smsCarrier: 'Airtel Nigeria',
+      smsFailureReason: 'Network Carrier Timeout / Out of Coverage',
+      smsDispatchedAt: new Date(now - 18 * 60000).toISOString(),
+    });
+
+    this.soulRecords.push({
+      id: `soul-pending-3`,
+      centreId: 'cnt-kb1-1',
+      firstName: 'Bitrus',
+      lastName: 'Danjuma',
+      phone: '+2348059123847',
+      gender: 'male',
+      ageBracket: 'youth',
+      community: 'Byazhin Kubwa',
+      outreachSpot: 'Kubwa Village Market Square',
+      residentialDistrict: 'Kubwa Phase 4',
+      residentialAddress: 'Plot 18, Phase 4, Kubwa',
+      residentialAreaCouncil: 'BWARI',
+      decisionType: 'new_convert',
+      wonByName: 'Brother Ezekiel Audu',
+      winnerChurch: 'CE Kubwa',
+      wonAt: new Date(now - 25 * 60000).toISOString(),
+      followUpChurch: 'CE Kubwa',
+      followUpStatus: 'not_started',
+      consentGiven: true,
+      notes: 'Market vendor prayed the salvation prayer.',
+      status: 'pending',
+      detailsPending: false,
+      smsGatewayStatus: 'failed',
+      smsCarrier: 'Glo Mobile',
+      smsFailureReason: 'Subscriber Inactive / Barred on Network',
+      smsDispatchedAt: new Date(now - 25 * 60000).toISOString(),
+    });
+
+    this.soulRecords.push({
+      id: `soul-pending-4`,
+      centreId: 'cnt-wuye2-1',
+      firstName: 'Blessing',
+      lastName: 'Okonkwo',
+      phone: '+2348092233445',
+      gender: 'female',
+      ageBracket: 'youth',
+      community: 'Airport Road Lugbe',
+      outreachSpot: 'Federal Secretariat Bus Terminal',
+      residentialDistrict: 'Lugbe (Airport Road)',
+      residentialAddress: 'Block 2, Federal Housing, Lugbe',
+      residentialAreaCouncil: 'AMAC',
+      decisionType: 'new_convert',
+      wonByName: 'Sister Blessing Okon',
+      winnerChurch: 'CE Express',
+      wonAt: new Date(now - 32 * 60000).toISOString(),
+      followUpChurch: 'CE Express',
+      followUpStatus: 'not_started',
+      consentGiven: true,
+      notes: 'Passenger at bus terminal accepted Christ warmly.',
+      status: 'pending',
+      detailsPending: false,
+      smsGatewayStatus: 'undelivered',
+      smsCarrier: '9mobile',
+      smsFailureReason: 'Signal Faded / Unreachable Terminal',
+      smsDispatchedAt: new Date(now - 32 * 60000).toISOString(),
     });
 
     // Seed recent ticker items
@@ -1486,21 +1628,26 @@ export class DataService {
     this.notifySubscribers();
   }
 
-  private addTickerItem(
+  public addTickerItem(
     centreName: string,
     count: number,
     winnerName?: string,
-    decisionBreakdown?: { newConverts: number; rededications: number; returnees: number }
+    decisionBreakdown?: { newConverts: number; rededications: number; returnees: number },
+    status?: 'verified' | 'pending',
+    isAnnouncement?: boolean
   ) {
     const newItem: TickerSubmission = {
-      id: `tick-${Date.now()}-${Math.random()}`,
+      id: `tick-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       centreName,
       count,
       winnerName,
       decisionBreakdown,
+      status,
+      isAnnouncement,
       timestamp: new Date().toISOString(),
     };
-    this.tickerItems = [newItem, ...this.tickerItems.slice(0, 19)];
+    this.tickerItems = [newItem, ...this.tickerItems.slice(0, 24)];
+    this.notifySubscribers();
   }
 
   private flashCentre(centreId: string) {
@@ -1533,6 +1680,18 @@ export class DataService {
 
   public updateCampaign(updates: Partial<Campaign>): boolean {
     this.campaign = { ...this.campaign, ...updates };
+
+    if (updates.announcement && updates.announcement.trim()) {
+      this.addTickerItem(
+        'Campaign Directorate',
+        0,
+        updates.announcement.trim(),
+        undefined,
+        'verified',
+        true
+      );
+    }
+
     this.auditLogs.unshift({
       id: `audit-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -1557,7 +1716,14 @@ export class DataService {
   }
 
   public getMilestones(): number[] {
-    return [1000, 2500, 5000, 7500, 10000];
+    const t = this.campaign.target || 40000;
+    return [
+      Math.round(t * 0.1),
+      Math.round(t * 0.25),
+      Math.round(t * 0.5),
+      Math.round(t * 0.75),
+      t,
+    ];
   }
 
   public getArchivedRecordsCount(): number {
@@ -1699,7 +1865,7 @@ export class DataService {
 
   public triggerMilestoneCelebration(milestoneValue: number) {
     playCelebrationSound();
-    this.addTickerItem('Campaign Directorate', milestoneValue, 'Milestone Reached! 🎉');
+    this.addTickerItem('Campaign Directorate', milestoneValue, 'Milestone Reached!');
     this.milestoneCelebrationSubscribers.forEach(cb => cb(milestoneValue));
     this.notifySubscribers();
   }
@@ -1849,7 +2015,7 @@ export class DataService {
           residentialAddress: p.residentialAddress,
           residentialDistrict: p.residentialDistrict,
           residentialAreaCouncil: p.residentialAreaCouncil,
-        }, item.wonByName || 'Field Worker (Synced)', item.userRole || 'field_worker');
+        }, item.wonByName || 'Soul Winner (Synced)', item.userRole || 'soul_winner');
       }
     } else {
       const b = item.bulkPayload || (item.batch as any);
@@ -1870,7 +2036,7 @@ export class DataService {
           rededications: rd,
           returnees: rt,
           note: b.note,
-        }, item.wonByName || 'Field Worker (Synced)', item.userRole || 'field_worker');
+        }, item.wonByName || 'Soul Winner (Synced)', item.userRole || 'soul_winner');
       }
     }
 
@@ -1912,7 +2078,7 @@ export class DataService {
               residentialAddress: p.residentialAddress,
               residentialDistrict: p.residentialDistrict,
               residentialAreaCouncil: p.residentialAreaCouncil,
-            }, item.wonByName || 'Field Worker (Synced)', item.userRole || 'field_worker');
+            }, item.wonByName || 'Soul Winner (Synced)', item.userRole || 'soul_winner');
           }
         } else {
           const b = item.bulkPayload || (item.batch as any);
@@ -1933,7 +2099,7 @@ export class DataService {
               rededications: rd,
               returnees: rt,
               note: b.note,
-            }, item.wonByName || 'Field Worker (Synced)', item.userRole || 'field_worker');
+            }, item.wonByName || 'Soul Winner (Synced)', item.userRole || 'soul_winner');
           }
         }
         this.offlineQueueItems = this.offlineQueueItems.filter(i => i.id !== item.id);
@@ -2007,6 +2173,10 @@ export class DataService {
     return [...list].sort((a, b) => new Date(b.wonAt).getTime() - new Date(a.wonAt).getTime());
   }
 
+  public getSoulRecordById(id: string): SoulRecord | undefined {
+    return this.soulRecords.find(r => r.id === id && !r.isDeleted);
+  }
+
   public getBatches(filter?: {
     centreId?: string;
     status?: string;
@@ -2072,8 +2242,8 @@ export class DataService {
       }
     });
 
-    const target = this.campaign.target || 10000;
-    const percentage = Math.min(100, Math.round((totalVerifiedSouls / target) * 1000) / 10);
+    const target = this.campaign.target || 40000;
+    const percentage = Math.round((totalVerifiedSouls / Math.max(1, target)) * 1000) / 10;
     const remaining = Math.max(0, target - totalVerifiedSouls);
 
     // Calculate souls in the last hour
@@ -2096,8 +2266,8 @@ export class DataService {
       this.soulRecords.filter(r => r.status === 'pending' && !r.isDeleted).length;
 
     // Projected total based on current velocity
-    const hourlyVelocity = Math.max(soulsLastHour, 85);
-    const projectedTotal = Math.min(target * 1.5, Math.round(totalVerifiedSouls + hourlyVelocity * 18));
+    const hourlyVelocity = totalVerifiedSouls === 0 ? 0 : Math.max(soulsLastHour, 85);
+    const projectedTotal = totalVerifiedSouls === 0 ? 0 : Math.min(target * 1.5, Math.round(totalVerifiedSouls + hourlyVelocity * 18));
 
     return {
       totalSouls: totalVerifiedSouls,
@@ -2774,8 +2944,8 @@ export class DataService {
 
   public addSoulRecord(
     record: Omit<SoulRecord, 'id' | 'wonAt' | 'status' | 'detailsPending'>,
-    actorName: string = 'Field Evangelist',
-    actorRole: UserRole = 'field_worker'
+    actorName: string = 'Soul Winner',
+    actorRole: UserRole = 'soul_winner'
   ): { success: boolean; id: string; anomalyFlagged: boolean; anomalyMessage?: string } {
     const phoneNorm = validateAndNormalizeNigerianPhone(record.phone);
     const normalizedPhone = phoneNorm.isValid ? phoneNorm.normalized : record.phone;
@@ -2834,14 +3004,29 @@ export class DataService {
         : undefined,
     });
 
+    this.addTickerItem(
+      centreName,
+      1,
+      `${record.firstName} ${record.lastName} (${record.wonByName})`,
+      undefined,
+      newRecord.status === 'verified' ? 'verified' : 'pending'
+    );
+
+    // Automated Bulk SMS Gateway Dispatch
+    this.dispatchSmsGatewayVerification(newId);
+
     if (newRecord.status === 'verified') {
-      this.addTickerItem(centreName, 1, `${record.firstName} ${record.lastName} (${record.wonByName})`);
       this.flashCentre(record.centreId);
       this.checkAndTriggerSmsMilestones(record.centreId);
     }
 
-    // Sync to Cloud Firestore in real-time
-    firebaseSync.syncSoulRecord(newRecord).catch(err => {
+    if (this.collationMode === 'live') {
+      this.liveSoulRecords = this.soulRecords;
+      this.persistLiveSouls();
+    }
+
+    // Sync to Cloud Firestore in real-time (target live collection if in live mode)
+    firebaseSync.syncSoulRecord(newRecord, this.collationMode === 'live').catch(err => {
       console.warn('[DataService] Background Firestore sync deferred:', err);
     });
 
@@ -2851,6 +3036,183 @@ export class DataService {
       id: newId,
       anomalyFlagged: isAnomaly,
       anomalyMessage: isAnomaly ? 'Duplicate phone match identified across registered records.' : undefined,
+    };
+  }
+
+  /**
+   * Dispatches automated verification SMS via the Bulk SMS Gateway
+   */
+  public async dispatchSmsGatewayVerification(
+    recordId: string,
+    options?: { isRetry?: boolean; forceDelivered?: boolean }
+  ): Promise<{
+    success: boolean;
+    status: SmsDeliveryStatus;
+    deliveryReceiptId?: string;
+    carrier?: string;
+    failureReason?: string;
+    message: string;
+  }> {
+    const record = this.soulRecords.find(r => r.id === recordId);
+    if (!record) return { success: false, status: 'failed', message: 'Record not found' };
+
+    const result = await bulkSmsService.dispatchVerificationSms(record, options);
+
+    record.smsGatewayStatus = result.status;
+    record.smsDeliveryReceiptId = result.deliveryReceiptId;
+    record.smsCarrier = result.carrier;
+    record.smsDispatchedAt = result.dispatchedAt;
+    record.smsDeliveredAt = result.deliveredAt;
+    record.smsFailureReason = result.failureReason;
+    record.smsRetryCount = (record.smsRetryCount || 0) + (options?.isRetry ? 1 : 0);
+    record.lastMessageType = 'sms';
+    record.lastMessageSentAt = result.dispatchedAt;
+    record.lastMessageText = result.messageText;
+
+    const centre = this.centres.find(c => c.id === record.centreId);
+    const centreName = centre ? centre.name : 'Abuja FCT Collation Hub';
+
+    if (result.status === 'delivered') {
+      // Auto-confirm verified!
+      record.status = 'verified';
+      record.verificationMethod = 'sms';
+      record.verifiedAt = result.deliveredAt || new Date().toISOString();
+      record.verifiedBy = 'Bulk SMS Gateway (Auto-Delivered)';
+      if (record.followUpStatus === 'not_started') {
+        record.followUpStatus = 'contacted';
+      }
+
+      this.auditLogs.unshift({
+        id: `audit-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        actorName: 'Bulk SMS Gateway',
+        actorRole: 'admin',
+        action: 'APPROVE_RECORD',
+        targetType: 'record',
+        targetId: record.id,
+        targetTitle: `${record.firstName} ${record.lastName} (${record.phone})`,
+        centreName,
+        details: `Carrier Delivery Receipt [${result.deliveryReceiptId}] confirmed on ${result.carrier}. Record auto-verified into zone total.`,
+      });
+
+      this.addTickerItem(centreName, 1, `${record.firstName} ${record.lastName} (Auto-Confirmed via SMS)`);
+      this.flashCentre(record.centreId);
+      this.checkAndTriggerSmsMilestones(record.centreId);
+    } else {
+      // Retained in Pending / Failed Delivery Queue
+      record.status = 'pending';
+      this.auditLogs.unshift({
+        id: `audit-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        actorName: 'Bulk SMS Gateway',
+        actorRole: 'admin',
+        action: 'UPDATE_CAMPAIGN',
+        targetType: 'record',
+        targetId: record.id,
+        targetTitle: `${record.firstName} ${record.lastName} (${record.phone})`,
+        centreName,
+        details: `Carrier delivery unconfirmed: ${result.failureReason || 'Undelivered'}. Placed in Manual Verification Queue.`,
+      });
+    }
+
+    // Record in smsLogs
+    this.smsLogs.unshift({
+      id: `sms-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: result.dispatchedAt,
+      centreId: record.centreId,
+      centreName,
+      coordinatorPhone: record.phone,
+      milestonePercentage: 0,
+      message: result.messageText,
+      status: result.status === 'delivered' ? 'sent' : 'failed',
+    });
+
+    this.notifySubscribers();
+
+    return {
+      success: result.success,
+      status: result.status,
+      deliveryReceiptId: result.deliveryReceiptId,
+      carrier: result.carrier,
+      failureReason: result.failureReason,
+      message: result.success
+        ? `Delivered on ${result.carrier} (${result.deliveryReceiptId}). Auto-confirmed!`
+        : `Unconfirmed on ${result.carrier}: ${result.failureReason}`,
+    };
+  }
+
+  /**
+   * Retrieves records where SMS delivery was undelivered, failed, or DND blocked (needing manual verification)
+   */
+  public getUndeliveredSmsRecords(): SoulRecord[] {
+    return this.soulRecords
+      .filter(r => !r.isDeleted && r.status === 'pending')
+      .sort((a, b) => new Date(b.wonAt).getTime() - new Date(a.wonAt).getTime());
+  }
+
+  /**
+   * Retrieves records that were successfully auto-confirmed via Bulk SMS Gateway delivery receipt
+   */
+  public getAutoConfirmedSmsRecords(): SoulRecord[] {
+    return this.soulRecords
+      .filter(r => !r.isDeleted && (r.smsGatewayStatus === 'delivered' || (r.status === 'verified' && r.verificationMethod === 'sms')))
+      .sort((a, b) => new Date(b.wonAt).getTime() - new Date(a.wonAt).getTime());
+  }
+
+  /**
+   * Computes telemetry stats for the Bulk SMS Gateway
+   */
+  public getSmsGatewayTelemetry(): SmsGatewayTelemetry {
+    let totalDelivered = 0;
+    let totalDndBlocked = 0;
+    let totalFailed = 0;
+
+    const carrierStats: Record<string, { sent: number; delivered: number }> = {
+      'MTN Nigeria': { sent: 0, delivered: 0 },
+      'Airtel Nigeria': { sent: 0, delivered: 0 },
+      'Glo Mobile': { sent: 0, delivered: 0 },
+      '9mobile': { sent: 0, delivered: 0 },
+    };
+
+    this.soulRecords.forEach(r => {
+      if (r.smsGatewayStatus) {
+        const carrier = r.smsCarrier || 'MTN Nigeria';
+        if (!carrierStats[carrier]) {
+          carrierStats[carrier] = { sent: 0, delivered: 0 };
+        }
+        carrierStats[carrier].sent += 1;
+
+        if (r.smsGatewayStatus === 'delivered') {
+          totalDelivered += 1;
+          carrierStats[carrier].delivered += 1;
+        } else if (r.smsGatewayStatus === 'dnd_blocked') {
+          totalDndBlocked += 1;
+        } else {
+          totalFailed += 1;
+        }
+      }
+    });
+
+    const totalDispatched = totalDelivered + totalDndBlocked + totalFailed || 1;
+    const deliveryRate = Math.round((totalDelivered / totalDispatched) * 1000) / 10;
+
+    const carrierBreakdown = Object.entries(carrierStats).map(([carrier, data]) => ({
+      carrier,
+      sent: data.sent,
+      delivered: data.delivered,
+      rate: data.sent > 0 ? Math.round((data.delivered / data.sent) * 100) : 0,
+    }));
+
+    return {
+      providerName: 'Termii Direct Route (CEAZ1)',
+      senderId: 'CE-ABUJA1',
+      connected: true,
+      totalDispatched: totalDelivered + totalDndBlocked + totalFailed,
+      totalDelivered,
+      totalFailed,
+      totalDndBlocked,
+      deliveryRate,
+      carrierBreakdown,
     };
   }
 
@@ -2864,7 +3226,7 @@ export class DataService {
     winnerCell?: string;
     winnerPcf?: string;
     winnerPhone?: string;
-  }, actorRole: UserRole = 'field_worker'): { success: boolean; id: string; burstWarning: boolean } {
+  }, actorRole: UserRole = 'soul_winner'): { success: boolean; id: string; burstWarning: boolean } {
     const nowISO = new Date().toISOString();
     const newId = `soul-tap-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
 
@@ -2927,10 +3289,17 @@ export class DataService {
       metadata: burstWarning ? { reason: 'Implausible burst: >10 taps in 30 seconds' } : undefined,
     });
 
-    // Sync tap record to Cloud Firestore
-    firebaseSync.syncSoulRecord(newRecord).catch(err => {
+    if (this.collationMode === 'live') {
+      this.liveSoulRecords = this.soulRecords;
+      this.persistLiveSouls();
+    }
+
+    // Sync tap record to Cloud Firestore (target live collection if in live mode)
+    firebaseSync.syncSoulRecord(newRecord, this.collationMode === 'live').catch(err => {
       console.warn('[DataService] Tap record Firestore sync deferred:', err);
     });
+
+    this.addTickerItem(centreName, 1, `Tap by ${params.userName}`, undefined, 'pending');
 
     this.notifySubscribers();
     return { success: true, id: newId, burstWarning };
@@ -2943,7 +3312,7 @@ export class DataService {
     userName: string;
     centreId: string;
     decisionType?: DecisionType;
-  }, actorRole: UserRole = 'field_worker'): { success: boolean; ids: string[] } {
+  }, actorRole: UserRole = 'soul_winner'): { success: boolean; ids: string[] } {
     const nowISO = new Date().toISOString();
     const ids: string[] = [];
 
@@ -2993,11 +3362,13 @@ export class DataService {
       details: `Quick number group entry of ${params.count} souls recorded by ${params.userName}.`,
     });
 
+    this.addTickerItem(centreName, params.count, `${params.label || 'Tally'} by ${params.userName}`, undefined, 'pending');
+
     this.notifySubscribers();
     return { success: true, ids };
   }
 
-  public undoSoulRecord(recordId: string, actorName: string = 'Field Worker'): boolean {
+  public undoSoulRecord(recordId: string, actorName: string = 'Soul Winner'): boolean {
     const idx = this.soulRecords.findIndex(r => r.id === recordId && r.reconcileStatus === 'pending');
     if (idx !== -1) {
       this.soulRecords.splice(idx, 1);
@@ -3005,7 +3376,7 @@ export class DataService {
         id: `audit-${Date.now()}`,
         timestamp: new Date().toISOString(),
         actorName,
-        actorRole: 'field_worker',
+        actorRole: 'soul_winner',
         action: 'DELETE_RECORD',
         targetType: 'record',
         targetId: recordId,
@@ -3024,16 +3395,19 @@ export class DataService {
       firstName: string;
       lastName: string;
       phone: string;
-      gender: Gender;
-      ageBracket: AgeBracket;
+      email?: string;
+      gender?: Gender;
+      ageBracket?: AgeBracket;
       community: string;
       locality?: string;
+      outreachSpot?: string;
+      winnerPcf?: string;
       decisionType?: DecisionType;
       notes?: string;
       followUpChurch?: string;
     },
     actorName: string,
-    actorRole: UserRole = 'field_worker'
+    actorRole: UserRole = 'soul_winner'
   ): { success: boolean; anomalyFlagged: boolean; message?: string } {
     const record = this.soulRecords.find(r => r.id === recordId);
     if (!record) return { success: false, anomalyFlagged: false, message: 'Record not found' };
@@ -3044,10 +3418,13 @@ export class DataService {
     record.firstName = details.firstName;
     record.lastName = details.lastName;
     record.phone = normalizedPhone;
-    record.gender = details.gender;
-    record.ageBracket = details.ageBracket;
+    if (details.email) record.email = details.email;
+    record.gender = details.gender || 'male';
+    record.ageBracket = details.ageBracket || 'youth';
     record.community = details.community;
     record.locality = details.locality || details.community;
+    if (details.outreachSpot) record.outreachSpot = details.outreachSpot;
+    if (details.winnerPcf) record.winnerPcf = details.winnerPcf;
     if (details.decisionType) record.decisionType = details.decisionType;
     if (details.notes) record.notes = details.notes;
     if (details.followUpChurch) record.followUpChurch = details.followUpChurch;
@@ -3081,8 +3458,13 @@ export class DataService {
       this.checkAndTriggerSmsMilestones(record.centreId);
     }
 
-    // Sync reconciled record to Cloud Firestore
-    firebaseSync.syncSoulRecord(record).catch(err => {
+    if (this.collationMode === 'live') {
+      this.liveSoulRecords = this.soulRecords;
+      this.persistLiveSouls();
+    }
+
+    // Sync reconciled record to Cloud Firestore (target live collection if in live mode)
+    firebaseSync.syncSoulRecord(record, this.collationMode === 'live').catch(err => {
       console.warn('[DataService] Reconciled record Firestore sync deferred:', err);
     });
 
@@ -3090,7 +3472,7 @@ export class DataService {
     return { success: true, anomalyFlagged: false };
   }
 
-  public abandonSoulRecord(recordId: string, reason: string, actorName: string, actorRole: UserRole = 'field_worker'): boolean {
+  public abandonSoulRecord(recordId: string, reason: string, actorName: string, actorRole: UserRole = 'soul_winner'): boolean {
     const record = this.soulRecords.find(r => r.id === recordId);
     if (!record) return false;
 
@@ -3136,7 +3518,7 @@ export class DataService {
       targetType: 'record',
       targetId: recordId,
       targetTitle: `Reassigned Record to ${newUserName}`,
-      details: `Coordinator ${actorName} reassigned pending record to field worker ${newUserName}.`,
+      details: `Coordinator ${actorName} reassigned pending record to soul winner ${newUserName}.`,
     });
 
     this.notifySubscribers();
@@ -3162,7 +3544,7 @@ export class DataService {
   public attachPhoneToRecord(
     recordId: string,
     phoneInput: string,
-    actorName: string = 'Field Worker',
+    actorName: string = 'Soul Winner',
     forceOverrideDuplicate: boolean = false
   ): { success: boolean; isDuplicate?: boolean; matchedRecord?: SoulRecord; message?: string } {
     const record = this.soulRecords.find(r => r.id === recordId);
@@ -3198,12 +3580,12 @@ export class DataService {
       id: `audit-${Date.now()}`,
       timestamp: new Date().toISOString(),
       actorName,
-      actorRole: 'field_worker',
+      actorRole: 'soul_winner',
       action: 'EDIT_RECORD',
       targetType: 'record',
       targetId: recordId,
       targetTitle: `Attached Phone ${formatNigerianPhone(normalizedPhone)}`,
-      details: `Field worker ${actorName} attached phone number to tap record.`,
+      details: `Soul winner ${actorName} attached phone number to tap record.`,
     });
 
     this.notifySubscribers();
@@ -3214,7 +3596,7 @@ export class DataService {
     let recs = this.soulRecords.filter(r => !r.isDeleted);
     if (centreId) recs = recs.filter(r => r.centreId === centreId);
     if (areaCouncilId) {
-      const centreIdsInCouncil = this.centres.filter(c => c.areaCouncilId === areaCouncilId || c.areaCouncilCode.toLowerCase() === areaCouncilId.toLowerCase()).map(c => c.id);
+      const centreIdsInCouncil = this.centres.filter(c => c.areaCouncilId === areaCouncilId || (c.areaCouncilCode && c.areaCouncilCode.toLowerCase() === areaCouncilId.toLowerCase())).map(c => c.id);
       recs = recs.filter(r => centreIdsInCouncil.includes(r.centreId));
     }
 
@@ -3316,17 +3698,29 @@ export class DataService {
       details: `Submitted batch report of ${batch.count} souls won during outreach at ${centreName}.`,
     });
 
-    if (newBatch.status === 'verified') {
-      this.addTickerItem(centreName, batch.count, batch.submittedByName, {
+    this.addTickerItem(
+      centreName,
+      batch.count,
+      batch.submittedByName,
+      {
         newConverts: batch.newConverts,
         rededications: batch.rededications,
         returnees: batch.returnees,
-      });
+      },
+      newBatch.status === 'verified' ? 'verified' : 'pending'
+    );
+
+    if (newBatch.status === 'verified') {
       this.flashCentre(batch.centreId);
     }
 
-    // Sync to Cloud Firestore
-    firebaseSync.syncBatch(newBatch).catch(err => {
+    if (this.collationMode === 'live') {
+      this.liveBatches = this.batches;
+      this.persistLiveBatches();
+    }
+
+    // Sync to Cloud Firestore (target live collection if in live mode)
+    firebaseSync.syncBatch(newBatch, this.collationMode === 'live').catch(err => {
       console.warn('[DataService] Batch Firestore sync deferred:', err);
     });
 
@@ -3431,6 +3825,62 @@ export class DataService {
 
     this.notifySubscribers();
     return true;
+  }
+
+  public logVerificationMessage(
+    recordId: string,
+    messageType: 'whatsapp' | 'sms',
+    messageText: string,
+    actorName: string = 'Soul Winner',
+    markVerified: boolean = false,
+    actorRole: UserRole = 'soul_winner'
+  ): { success: boolean; record?: SoulRecord } {
+    const record = this.soulRecords.find(r => r.id === recordId);
+    if (!record) return { success: false };
+
+    const nowIso = new Date().toISOString();
+    record.lastMessageSentAt = nowIso;
+    record.lastMessageType = messageType;
+    record.lastMessageText = messageText;
+    if (record.followUpStatus === 'not_started') {
+      record.followUpStatus = 'contacted';
+    }
+
+    if (markVerified && record.status !== 'verified') {
+      record.status = 'verified';
+      record.verifiedAt = nowIso;
+      record.verifiedBy = actorName;
+      record.verificationMethod = messageType;
+    }
+
+    const centre = this.centres.find(c => c.id === record.centreId);
+    const centreName = centre ? centre.name : 'Abuja FCT Collation Hub';
+
+    this.auditLogs.unshift({
+      id: `audit-${Date.now()}`,
+      timestamp: nowIso,
+      actorName,
+      actorRole,
+      action: 'APPROVE_RECORD',
+      targetType: 'record',
+      targetId: record.id,
+      targetTitle: `${record.firstName} ${record.lastName}`,
+      centreName,
+      details: `${messageType === 'whatsapp' ? 'WhatsApp message' : 'SMS'} dispatched to ${record.firstName} ${record.lastName} (${record.phone})${markVerified ? ' & marked verified' : ''}.`,
+    });
+
+    if (markVerified) {
+      this.addTickerItem(centreName, 1, `${record.firstName} ${record.lastName} (${record.wonByName})`);
+      this.flashCentre(record.centreId);
+    }
+
+    // Sync to Cloud Firestore in real-time
+    firebaseSync.syncSoulRecord(record).catch(err => {
+      console.warn('[DataService] Verification message sync deferred:', err);
+    });
+
+    this.notifySubscribers();
+    return { success: true, record };
   }
 
   public rejectSoulRecord(recordId: string, reason: string, actorName: string, actorRole: UserRole): boolean {
@@ -3573,6 +4023,16 @@ export class DataService {
       details: `Approved and verified ${count} pending field submissions in queue.`,
     });
 
+    if (count > 0) {
+      this.addTickerItem(
+        'Collation Verification Desk',
+        count,
+        `Bulk verified by ${reviewerName}`,
+        undefined,
+        'verified'
+      );
+    }
+
     this.notifySubscribers();
     return true;
   }
@@ -3674,14 +4134,14 @@ export class DataService {
 
   private sessionTimer: CampaignSessionTimer = {
     mode: 'countdown',
-    status: 'idle',
-    durationMs: 7200000, // 2h
-    scheduledStartAt: null,
-    startedAt: null,
-    endsAt: null,
+    status: 'running',
+    durationMs: 39 * 3600 * 1000, // 39h continuous blitz (9:00 AM Oct 1 to 12:00 Midnight Oct 2)
+    scheduledStartAt: '2026-10-01T09:00:00.000+01:00',
+    startedAt: '2026-10-01T09:00:00.000+01:00',
+    endsAt: '2026-10-02T23:59:59.000+01:00',
     pausedAt: null,
     totalPausedMs: 0,
-    label: 'Evening Crusade — Session 1',
+    label: '24-Hour Blitz: 9:00 AM Oct 1st – 12:00 Midnight Oct 2nd',
     endBehaviour: 'celebrate_total',
     baselineSouls: 0,
     unlockedManually: false,

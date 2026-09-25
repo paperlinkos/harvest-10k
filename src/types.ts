@@ -1,6 +1,15 @@
 import { AreaCouncilCode } from './data/fctLocations';
 
-export type UserRole = 'field_worker' | 'coordinator' | 'admin' | 'public';
+export type CollationMode = 'demo' | 'live';
+
+export type UserRole =
+  | 'public'        // Observer (Not logged in user - view only, no field records)
+  | 'soul_winner'   // Soul Winner (Normal user who inputs data)
+  | 'pastor'        // Pastor (Church pastor tracking their church goals)
+  | 'group_pastor'  // Group Pastor (Oversees multiple church centres)
+  | 'zonal_pastor'  // Zonal Pastor (God's eye view of the entire zone)
+  | 'admin'         // Admin (Controls data, push notifications, reconciliation, audit)
+  | 'coordinator';  // Coordinator desk (Operations desk alias)
 
 export type Gender = 'male' | 'female' | 'other';
 
@@ -43,6 +52,7 @@ export interface Centre {
   id: string;
   code: string;
   name: string;
+  groupName?: string; // Group or Sub-Group category e.g. "Wuye Sub-Group 1", "Karmo Group"
   areaCouncilId: string;
   regionId?: string; // Compatibility alias to areaCouncilId
   areaCouncilCode?: AreaCouncilCode;
@@ -67,6 +77,7 @@ export interface SoulWinnerProfile {
   pcfName: string; // Pastoral Care Fellowship / Church Group e.g. "Haven PCF", "Kings PCF"
   churchCentreId: string; // Collation centre / Church ID
   churchName?: string;
+  assignedGroup?: string; // Group jurisdiction for Group Pastors e.g. "Kubwa Group", "Wuye Group", "Zonal Church Group"
   roleTitle?: string; // e.g. "Member", "Cell Leader", "Assistant Cell Leader", "BSCT", "PCF Leader"
   registeredAt: string;
 }
@@ -103,6 +114,7 @@ export interface SoulRecord {
   firstName: string;
   lastName: string;
   phone: string;
+  email?: string;
   gender: Gender;
   ageBracket: AgeBracket;
   community: string; // Free-text or selected locality name
@@ -132,6 +144,10 @@ export interface SoulRecord {
   rejectionReason?: string;
   verifiedAt?: string;
   verifiedBy?: string;
+  verificationMethod?: 'sms' | 'whatsapp' | 'manual' | 'call' | 'qr';
+  lastMessageSentAt?: string;
+  lastMessageType?: 'whatsapp' | 'sms';
+  lastMessageText?: string;
   detailsPending: boolean;
   duplicateOverrideReason?: string;
   phoneNeedsReview?: boolean;
@@ -151,6 +167,33 @@ export interface SoulRecord {
   tapLat?: number;
   tapLng?: number;
   abandonReason?: string;
+  // Automated Bulk SMS Gateway Verification Tracking
+  smsGatewayStatus?: 'delivered' | 'undelivered' | 'failed' | 'dnd_blocked' | 'pending';
+  smsDeliveryReceiptId?: string;
+  smsDeliveredAt?: string;
+  smsCarrier?: string;
+  smsFailureReason?: string;
+  smsDispatchedAt?: string;
+  smsRetryCount?: number;
+}
+
+export type SmsDeliveryStatus = 'delivered' | 'undelivered' | 'failed' | 'dnd_blocked' | 'pending';
+
+export interface SmsGatewayTelemetry {
+  providerName: string;
+  senderId: string;
+  connected: boolean;
+  totalDispatched: number;
+  totalDelivered: number;
+  totalFailed: number;
+  totalDndBlocked: number;
+  deliveryRate: number;
+  carrierBreakdown: {
+    carrier: string;
+    sent: number;
+    delivered: number;
+    rate: number;
+  }[];
 }
 
 export interface ResidentialAreaStats {
@@ -253,6 +296,8 @@ export interface TickerSubmission {
   };
   winnerName?: string;
   timestamp: string;
+  status?: 'verified' | 'pending';
+  isAnnouncement?: boolean;
 }
 
 export interface CentreStanding {

@@ -14,8 +14,10 @@ import {
   MessageCircle,
   MapPin,
   ShieldAlert,
+  Printer,
 } from 'lucide-react';
 import { getWhatsAppLink } from '../utils/whatsappUtils';
+import { VerificationMessageModal } from '../components/VerificationMessageModal';
 
 interface FollowUpScreenProps {
   onSuccessToast?: (title: string, message: string) => void;
@@ -41,12 +43,13 @@ export const FollowUpScreen: React.FC<FollowUpScreenProps> = ({
   const [selectedCentre, setSelectedCentre] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
   const [editingRecord, setEditingRecord] = useState<SoulRecord | null>(null);
+  const [messageModalRecord, setMessageModalRecord] = useState<SoulRecord | null>(null);
   const [newStatus, setNewStatus] = useState<FollowUpStatus>('not_started');
   const [followUpNotes, setFollowUpNotes] = useState<string>('');
   const [followUpChurch, setFollowUpChurch] = useState<string>('');
 
   // Access Control Guard
-  if (userRole === 'field_worker' || userRole === 'public') {
+  if (userRole === 'soul_winner' || userRole === 'public') {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
         <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
@@ -58,16 +61,16 @@ export const FollowUpScreen: React.FC<FollowUpScreenProps> = ({
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
             The Zonal Follow-Up & Pastoral Retention Board is managed by Centre Coordinators and Care Team Leads.
-            {userRole === 'field_worker'
-              ? " As a Field Evangelist, you can track and reach the souls you personally won under 'My Won Souls'."
-              : " For public overview and rankings, please visit the Live Dashboard or Leaderboards."}
+            {userRole === 'soul_winner'
+              ? " As a Soul Winner, you can track and reach the souls you personally won under 'My Won Souls'."
+              : " For public overview and rankings, please visit the Live Dashboard or Projector View."}
           </p>
           <div className="pt-2">
             <button
-              onClick={() => onNavigate && onNavigate(userRole === 'field_worker' ? 'records' : 'dashboard')}
+              onClick={() => onNavigate && onNavigate(userRole === 'soul_winner' ? 'records' : 'dashboard')}
               className={`px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs cursor-pointer ${palette.btnPrimary}`}
             >
-              {userRole === 'field_worker' ? 'Go to My Won Souls' : 'Return to Dashboard'}
+              {userRole === 'soul_winner' ? 'Go to My Won Souls' : 'Return to Dashboard'}
             </button>
           </div>
         </div>
@@ -145,6 +148,16 @@ export const FollowUpScreen: React.FC<FollowUpScreenProps> = ({
               </option>
             ))}
           </select>
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
+            title="Print or Export Discipleship Table"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Table</span>
+          </button>
         </div>
       </div>
 
@@ -231,32 +244,19 @@ export const FollowUpScreen: React.FC<FollowUpScreenProps> = ({
                                 <Phone className="w-3 h-3 text-slate-400 shrink-0" />
                                 <span className="truncate">{r.phone}</span>
                               </div>
-                              {getWhatsAppLink({
-                                phone: r.phone,
-                                firstName: r.firstName,
-                                lastName: r.lastName,
-                                decisionType: r.decisionType,
-                                centreName: centre?.name,
-                                soulWinnerName: r.wonByName,
-                              }) && (
-                                <a
-                                  href={getWhatsAppLink({
-                                    phone: r.phone,
-                                    firstName: r.firstName,
-                                    lastName: r.lastName,
-                                    decisionType: r.decisionType,
-                                    centreName: centre?.name,
-                                    soulWinnerName: r.wonByName,
-                                  })!}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20 transition-colors shrink-0 whitespace-nowrap"
-                                  title="Send gospel welcome message on WhatsApp"
+                              {r.phone && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMessageModalRecord(r);
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20 transition-colors shrink-0 whitespace-nowrap cursor-pointer"
+                                  title="Send WhatsApp or SMS verification message"
                                 >
                                   <MessageCircle className="w-3 h-3 shrink-0" />
-                                  <span>WhatsApp</span>
-                                </a>
+                                  <span>Message / Verify</span>
+                                </button>
                               )}
                             </div>
                           )}
@@ -414,6 +414,15 @@ export const FollowUpScreen: React.FC<FollowUpScreenProps> = ({
           </div>
         )}
       </Modal>
+
+      {/* Verification & Discipleship Messaging Modal */}
+      <VerificationMessageModal
+        isOpen={!!messageModalRecord}
+        onClose={() => setMessageModalRecord(null)}
+        record={messageModalRecord}
+        userRole={userRole}
+        onSuccessToast={onSuccessToast}
+      />
     </div>
   );
 };

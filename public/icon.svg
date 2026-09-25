@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gradBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="flameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with rounded rectangle for maskable icon -->
+  <rect width="512" height="512" rx="112" fill="url(#gradBg)"/>
+  <!-- Decorative halo -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#f59e0b" stroke-width="6" stroke-opacity="0.25" stroke-dasharray="8 8"/>
+  <!-- Central Flame Emblem -->
+  <path d="M256 80 C275 140, 350 200, 350 290 C350 355, 305 410, 256 410 C207 410, 162 355, 162 290 C162 220, 230 160, 256 80 Z" fill="url(#flameGrad)" />
+  <path d="M256 190 C270 230, 310 270, 310 320 C310 360, 282 390, 256 390 C230 390, 202 360, 202 320 C202 280, 240 240, 256 190 Z" fill="#ffffff" fill-opacity="0.9" />
+  <!-- 10K Target Badge -->
+  <rect x="156" y="380" width="200" height="54" rx="27" fill="#0f172a" stroke="url(#goldGrad)" stroke-width="4"/>
+  <text x="256" y="416" fill="#fbbf24" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="26" text-anchor="middle" letter-spacing="2">HARVEST 10K</text>
+</svg>

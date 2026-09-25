@@ -15,6 +15,7 @@ interface MilestoneCelebrationOverlayProps {
   milestone: number;
   verse: string;
   campaignName: string;
+  target?: number;
   onDismiss: () => void;
   durationSeconds?: number;
 }
@@ -23,6 +24,7 @@ export const MilestoneCelebrationOverlay: React.FC<MilestoneCelebrationOverlayPr
   milestone,
   verse,
   campaignName,
+  target,
   onDismiss,
   durationSeconds = 8,
 }) => {
@@ -117,7 +119,7 @@ export const MilestoneCelebrationOverlay: React.FC<MilestoneCelebrationOverlayPr
   }, [onDismiss]);
 
   const formattedMilestone = milestone.toLocaleString();
-  const isUltimateTarget = milestone >= 10000;
+  const isUltimateTarget = target ? milestone >= target : milestone >= 40000;
 
   return (
     <div
@@ -162,7 +164,7 @@ export const MilestoneCelebrationOverlay: React.FC<MilestoneCelebrationOverlayPr
         {/* Milestone Banner Pill */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-bold uppercase tracking-widest shadow-inner">
           <Flame className="w-4 h-4 text-amber-400" />
-          <span>{isUltimateTarget ? '🌟 NATIONAL CAMPAIGN GOAL ACHIEVED 🌟' : '🔥 HARVEST MILESTONE SURPASSED 🔥'}</span>
+          <span>{isUltimateTarget ? 'NATIONAL CAMPAIGN GOAL ACHIEVED' : 'HARVEST MILESTONE SURPASSED'}</span>
           <Flame className="w-4 h-4 text-amber-400" />
         </div>
 

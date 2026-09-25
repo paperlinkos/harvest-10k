@@ -1,4 +1,15 @@
-export type AreaCouncilCode = 'AMAC' | 'BWARI' | 'GWAGWALADA' | 'KUJE' | 'KWALI' | 'ABAJI';
+export type AreaCouncilCode =
+  | 'AMAC'
+  | 'BWARI'
+  | 'GWAGWALADA'
+  | 'KUJE'
+  | 'KWALI'
+  | 'ABAJI'
+  | 'BWR'
+  | 'GWG'
+  | 'KUJ'
+  | 'KWL'
+  | 'ABJ';
 
 export interface Locality {
   name: string;
@@ -14,83 +25,105 @@ export const AREA_COUNCILS: Record<AreaCouncilCode, { name: string; code: AreaCo
   KUJE: { name: 'Kuje Area Council', code: 'KUJE' },
   KWALI: { name: 'Kwali Area Council', code: 'KWALI' },
   ABAJI: { name: 'Abaji Area Council', code: 'ABAJI' },
+  BWR: { name: 'Bwari Area Council', code: 'BWARI' },
+  GWG: { name: 'Gwagwalada Area Council', code: 'GWAGWALADA' },
+  KUJ: { name: 'Kuje Area Council', code: 'KUJE' },
+  KWL: { name: 'Kwali Area Council', code: 'KWALI' },
+  ABJ: { name: 'Abaji Area Council', code: 'ABAJI' },
 };
 
+const amacWards = [
+  'City Centre',
+  'Garki',
+  'Wuse',
+  'Kabusa',
+  'Gwarinpa',
+  'Jiwa',
+  'Gui',
+  'Karshi',
+  'Orozo',
+  'Karu',
+  'Nyanya',
+  'Gwagwa',
+];
+
+const bwariWards = [
+  'Bwari Central',
+  'Kuduru',
+  'Ushafa',
+  'Dutsen Alhaji',
+  'Kubwa',
+  'Byazhin',
+  'Igu',
+  'Kawu',
+  'Shere',
+  'Usuma',
+];
+
+const gwagwaladaWards = [
+  'Gwagwalada Central',
+  'Kutunku',
+  'Staff Quarters',
+  'Ibwa',
+  'Dobi',
+  'Paiko',
+  'Tungan Maje',
+  'Zuba',
+  'Ikwa',
+  'Gwako',
+];
+
+const kujeWards = [
+  'Kuje Central',
+  'Chibiri',
+  'Gaube',
+  'Kwaku',
+  'Kabi',
+  'Rubochi',
+  'Gwargwada',
+  'Gudun Karya',
+  'Kujekwa',
+  'Yenche',
+];
+
+const kwaliWards = [
+  'Kwali Central',
+  'Yangoji',
+  'Pai',
+  'Kilankwa',
+  'Dafa',
+  'Kundu',
+  'Ashara',
+  'Gumbo',
+  'Wako',
+  'Yebu',
+];
+
+const abajiWards = [
+  'Abaji Central',
+  'Abaji North East',
+  'Abaji South East',
+  'Agyana/Pandagi',
+  'Rimba Ebagi',
+  'Nuku',
+  'Alu/Mamagi',
+  'Yaba',
+  'Gurdi',
+  'Gawu',
+];
+
 export const WARDS: Record<AreaCouncilCode, string[]> = {
-  AMAC: [
-    'City Centre',
-    'Garki',
-    'Wuse',
-    'Kabusa',
-    'Gwarinpa',
-    'Jiwa',
-    'Gui',
-    'Karshi',
-    'Orozo',
-    'Karu',
-    'Nyanya',
-    'Gwagwa',
-  ],
-  BWARI: [
-    'Bwari Central',
-    'Kuduru',
-    'Ushafa',
-    'Dutsen Alhaji',
-    'Kubwa',
-    'Byazhin',
-    'Igu',
-    'Kawu',
-    'Shere',
-    'Usuma',
-  ],
-  GWAGWALADA: [
-    'Gwagwalada Central',
-    'Kutunku',
-    'Staff Quarters',
-    'Ibwa',
-    'Dobi',
-    'Paiko',
-    'Tungan Maje',
-    'Zuba',
-    'Ikwa',
-    'Gwako',
-  ],
-  KUJE: [
-    'Kuje Central',
-    'Chibiri',
-    'Gaube',
-    'Kwaku',
-    'Kabi',
-    'Rubochi',
-    'Gwargwada',
-    'Gudun Karya',
-    'Kujekwa',
-    'Yenche',
-  ],
-  KWALI: [
-    'Kwali Central',
-    'Yangoji',
-    'Pai',
-    'Kilankwa',
-    'Dafa',
-    'Kundu',
-    'Ashara',
-    'Gumbo',
-    'Wako',
-    'Yebu',
-  ],
-  ABAJI: [
-    'Abaji Central',
-    'Abaji North East',
-    'Abaji South East',
-    'Agyana/Pandagi',
-    'Rimba Ebagi',
-    'Nuku',
-    'Alu/Mamagi',
-    'Yaba',
-    'Gurdi',
-    'Gawu',
-  ],
+  AMAC: amacWards,
+  BWARI: bwariWards,
+  GWAGWALADA: gwagwaladaWards,
+  KUJE: kujeWards,
+  KWALI: kwaliWards,
+  ABAJI: abajiWards,
+  BWR: bwariWards,
+  GWG: gwagwaladaWards,
+  KUJ: kujeWards,
+  KWL: kwaliWards,
+  ABJ: abajiWards,
 };
 
 const amacDistrictsPhase1: string[] = [

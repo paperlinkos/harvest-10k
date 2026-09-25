@@ -2,174 +2,147 @@ import {
   collection,
   doc,
   setDoc,
-  deleteDoc,
   onSnapshot,
   query,
-  orderBy,
   limit,
-  getDocs,
-  writeBatch
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { SoulRecord, Batch, SoulWinnerProfile } from '../types';
 
 export class FirebaseSyncService {
-  private isConnected: boolean = false;
-  private unsubscribeSouls: (() => void) | null = null;
-  private unsubscribeBatches: (() => void) | null = null;
-  private unsubscribeWinners: (() => void) | null = null;
+  private isAvailable: boolean = true;
 
-  public getIsConnected(): boolean {
-    return this.isConnected;
+  constructor() {
+    if (!db) {
+      this.isAvailable = false;
+    }
   }
 
-  // Real-time listener for remote Soul Records
-  public subscribeToSouls(onUpdate: (remoteRecords: SoulRecord[]) => void): () => void {
+  public async syncSoulRecord(record: SoulRecord, isLive: boolean = false): Promise<void> {
+    if (!this.isAvailable) return;
     try {
-      const soulsRef = collection(db, 'harvest_souls');
-      const q = query(soulsRef, orderBy('wonAt', 'desc'), limit(500));
+      const colName = isLive ? 'live_souls' : 'souls';
+      const ref = doc(db, colName, record.id);
+      // Clean undefined values for Firestore
+      const cleanData = JSON.parse(JSON.stringify(record));
+      await setDoc(ref, cleanData, { merge: true });
+    } catch (err) {
+      console.warn('[FirebaseSync] syncSoulRecord error:', err);
+    }
+  }
 
-      const unsub = onSnapshot(
+  public async syncBatch(batchItem: Batch, isLive: boolean = false): Promise<void> {
+    if (!this.isAvailable) return;
+    try {
+      const colName = isLive ? 'live_batches' : 'batches';
+      const ref = doc(db, colName, batchItem.id);
+      const cleanData = JSON.parse(JSON.stringify(batchItem));
+      await setDoc(ref, cleanData, { merge: true });
+    } catch (err) {
+      console.warn('[FirebaseSync] syncBatch error:', err);
+    }
+  }
+
+  public async syncSoulWinner(winner: SoulWinnerProfile): Promise<void> {
+    if (!this.isAvailable) return;
+    try {
+      const ref = doc(db, 'soulWinners', winner.id);
+      const cleanData = JSON.parse(JSON.stringify(winner));
+      await setDoc(ref, cleanData, { merge: true });
+    } catch (err) {
+      console.warn('[FirebaseSync] syncSoulWinner error:', err);
+    }
+  }
+
+  public async initialBulkSync(souls: SoulRecord[], batches: Batch[]): Promise<void> {
+    if (!this.isAvailable) return;
+    try {
+      // Sync initial records in batches of up to 500
+      const chunk = souls.slice(0, 100);
+      const batchOp = writeBatch(db);
+      chunk.forEach(s => {
+        const ref = doc(db, 'souls', s.id);
+        batchOp.set(ref, JSON.parse(JSON.stringify(s)), { merge: true });
+      });
+      batches.slice(0, 50).forEach(b => {
+        const ref = doc(db, 'batches', b.id);
+        batchOp.set(ref, JSON.parse(JSON.stringify(b)), { merge: true });
+      });
+      await batchOp.commit();
+    } catch (err) {
+      console.warn('[FirebaseSync] initialBulkSync deferred:', err);
+    }
+  }
+
+  public subscribeToSouls(callback: (remoteSouls: SoulRecord[]) => void, isLive: boolean = false): () => void {
+    if (!this.isAvailable) return () => {};
+    try {
+      const colName = isLive ? 'live_souls' : 'souls';
+      const q = query(collection(db, colName), limit(1000));
+      return onSnapshot(
         q,
-        (snapshot) => {
-          this.isConnected = true;
-          const records: SoulRecord[] = [];
-          snapshot.forEach((docSnap) => {
-            records.push(docSnap.data() as SoulRecord);
+        snapshot => {
+          const remoteSouls: SoulRecord[] = [];
+          snapshot.forEach(docSnap => {
+            remoteSouls.push(docSnap.data() as SoulRecord);
           });
-          onUpdate(records);
+          callback(remoteSouls);
         },
-        (error) => {
-          console.warn('[FirebaseSync] Souls subscription warning:', error.message);
+        err => {
+          console.warn(`[FirebaseSync] subscribeToSouls (${colName}) error:`, err);
         }
       );
-
-      this.unsubscribeSouls = unsub;
-      return unsub;
-    } catch (e) {
-      console.warn('[FirebaseSync] Unable to subscribe to souls:', e);
+    } catch (err) {
+      console.warn('[FirebaseSync] Failed to setup subscribeToSouls listener:', err);
       return () => {};
     }
   }
 
-  // Real-time listener for remote Batches
-  public subscribeToBatches(onUpdate: (remoteBatches: Batch[]) => void): () => void {
+  public subscribeToBatches(callback: (remoteBatches: Batch[]) => void, isLive: boolean = false): () => void {
+    if (!this.isAvailable) return () => {};
     try {
-      const batchesRef = collection(db, 'harvest_batches');
-      const q = query(batchesRef, orderBy('submittedAt', 'desc'), limit(200));
-
-      const unsub = onSnapshot(
+      const colName = isLive ? 'live_batches' : 'batches';
+      const q = query(collection(db, colName), limit(500));
+      return onSnapshot(
         q,
-        (snapshot) => {
-          this.isConnected = true;
-          const batches: Batch[] = [];
-          snapshot.forEach((docSnap) => {
-            batches.push(docSnap.data() as Batch);
+        snapshot => {
+          const remoteBatches: Batch[] = [];
+          snapshot.forEach(docSnap => {
+            remoteBatches.push(docSnap.data() as Batch);
           });
-          onUpdate(batches);
+          callback(remoteBatches);
         },
-        (error) => {
-          console.warn('[FirebaseSync] Batches subscription warning:', error.message);
+        err => {
+          console.warn(`[FirebaseSync] subscribeToBatches (${colName}) error:`, err);
         }
       );
-
-      this.unsubscribeBatches = unsub;
-      return unsub;
-    } catch (e) {
-      console.warn('[FirebaseSync] Unable to subscribe to batches:', e);
+    } catch (err) {
+      console.warn('[FirebaseSync] Failed to setup subscribeToBatches listener:', err);
       return () => {};
     }
   }
 
-  // Real-time listener for Soul Winner Profiles
-  public subscribeToWinners(onUpdate: (remoteWinners: SoulWinnerProfile[]) => void): () => void {
+  public subscribeToWinners(callback: (remoteWinners: SoulWinnerProfile[]) => void): () => void {
+    if (!this.isAvailable) return () => {};
     try {
-      const winnersRef = collection(db, 'harvest_winners');
-      const q = query(winnersRef, limit(200));
-
-      const unsub = onSnapshot(
+      const q = query(collection(db, 'soulWinners'), limit(500));
+      return onSnapshot(
         q,
-        (snapshot) => {
-          this.isConnected = true;
-          const winners: SoulWinnerProfile[] = [];
-          snapshot.forEach((docSnap) => {
-            winners.push(docSnap.data() as SoulWinnerProfile);
+        snapshot => {
+          const remoteWinners: SoulWinnerProfile[] = [];
+          snapshot.forEach(docSnap => {
+            remoteWinners.push(docSnap.data() as SoulWinnerProfile);
           });
-          onUpdate(winners);
+          callback(remoteWinners);
         },
-        (error) => {
-          console.warn('[FirebaseSync] Winners subscription warning:', error.message);
+        err => {
+          console.warn('[FirebaseSync] subscribeToWinners error:', err);
         }
       );
-
-      this.unsubscribeWinners = unsub;
-      return unsub;
-    } catch (e) {
-      console.warn('[FirebaseSync] Unable to subscribe to winners:', e);
+    } catch (err) {
+      console.warn('[FirebaseSync] Failed to setup subscribeToWinners listener:', err);
       return () => {};
-    }
-  }
-
-  // Push single soul record to Firestore
-  public async syncSoulRecord(record: SoulRecord): Promise<boolean> {
-    try {
-      const ref = doc(db, 'harvest_souls', record.id);
-      await setDoc(ref, { ...record }, { merge: true });
-      this.isConnected = true;
-      return true;
-    } catch (err) {
-      console.warn('[FirebaseSync] Error syncing record to Firestore:', err);
-      return false;
-    }
-  }
-
-  // Push batch report to Firestore
-  public async syncBatch(batch: Batch): Promise<boolean> {
-    try {
-      const ref = doc(db, 'harvest_batches', batch.id);
-      await setDoc(ref, { ...batch }, { merge: true });
-      this.isConnected = true;
-      return true;
-    } catch (err) {
-      console.warn('[FirebaseSync] Error syncing batch to Firestore:', err);
-      return false;
-    }
-  }
-
-  // Push soul winner profile
-  public async syncSoulWinner(profile: SoulWinnerProfile): Promise<boolean> {
-    try {
-      const ref = doc(db, 'harvest_winners', profile.id);
-      await setDoc(ref, { ...profile }, { merge: true });
-      this.isConnected = true;
-      return true;
-    } catch (err) {
-      console.warn('[FirebaseSync] Error syncing winner to Firestore:', err);
-      return false;
-    }
-  }
-
-  // Bulk push initial records if database is empty
-  public async initialBulkSync(records: SoulRecord[], batches: Batch[]): Promise<void> {
-    try {
-      const checkSnap = await getDocs(query(collection(db, 'harvest_souls'), limit(1)));
-      if (checkSnap.empty && records.length > 0) {
-        console.log('[FirebaseSync] Seeding remote Firestore with baseline harvest data...');
-        // Write top 50 in batches to avoid quotas
-        const firestoreBatch = writeBatch(db);
-        records.slice(0, 40).forEach((rec) => {
-          const recRef = doc(db, 'harvest_souls', rec.id);
-          firestoreBatch.set(recRef, rec);
-        });
-        batches.slice(0, 20).forEach((b) => {
-          const bRef = doc(db, 'harvest_batches', b.id);
-          firestoreBatch.set(bRef, b);
-        });
-        await firestoreBatch.commit();
-        console.log('[FirebaseSync] Baseline sync committed to Firestore.');
-      }
-    } catch (err) {
-      console.warn('[FirebaseSync] Initial bulk sync skipped:', err);
     }
   }
 }

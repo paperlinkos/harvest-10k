@@ -24,11 +24,19 @@ import {
   HelpCircle,
   Sun,
   Moon,
+  Volume2,
+  VolumeX,
   PanelLeftClose,
   PanelLeftOpen,
   ChevronLeft,
   ChevronRight,
+  Lock,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
+import { getSoundEnabled, setSoundEnabled, playDingSound } from '../utils/audioUtils';
+import { PWAInstallButton } from './PWAInstallButton';
+import { useAuth } from '../context/AuthContext';
 
 interface NavItem {
   id: string;
@@ -70,6 +78,9 @@ interface SidebarProps {
   onClose: () => void;
   onOpenTour?: () => void;
   onOpenSoulWinnerReg?: () => void;
+  onOpenAuthModal?: () => void;
+  onLogout?: () => void;
+  onRoleChange?: (role: UserRole) => void;
   soulWinnerProfile?: SoulWinnerProfile;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -84,22 +95,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   onOpenTour,
   onOpenSoulWinnerReg,
+  onOpenAuthModal,
+  onLogout,
+  onRoleChange,
   soulWinnerProfile,
   isCollapsed = false,
   onToggleCollapse,
 }) => {
   const { theme, toggleTheme, palette } = useTheme();
   const isDark = theme === 'dark';
+  const { user: firebaseUser, logout: firebaseLogout } = useAuth();
   const [simStatus, setSimStatus] = useState(() => dataService.getSimulationStatus());
+  const [isSoundOn, setIsSoundOn] = useState(() => getSoundEnabled());
   const stats = dataService.getStats();
   const progressPercent = Math.min(100, Math.round((stats.totalSouls / stats.target) * 1000) / 10);
+
+  const handleLogoutClick = async () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      try {
+        await firebaseLogout();
+      } catch (err) {
+        console.warn('Logout error:', err);
+      }
+      if (onRoleChange) onRoleChange('public');
+    }
+    onClose();
+  };
 
   useEffect(() => {
     const unsub = dataService.subscribe(() => {
       setSimStatus(dataService.getSimulationStatus());
     });
-    return unsub;
+    const handleSoundChange = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>;
+      setIsSoundOn(customEvent.detail);
+    };
+    window.addEventListener('harvest10k_sound_change', handleSoundChange);
+    return () => {
+      unsub();
+      window.removeEventListener('harvest10k_sound_change', handleSoundChange);
+    };
   }, []);
+
+  const handleToggleSound = () => {
+    const next = !isSoundOn;
+    setIsSoundOn(next);
+    setSoundEnabled(next);
+    if (next) {
+      playDingSound();
+    }
+  };
 
   const navGroups: NavGroup[] = [
     {
@@ -109,33 +156,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
           id: 'dashboard',
           label: 'Live Dashboard',
           icon: LayoutDashboard,
-          roles: ['coordinator', 'admin', 'public', 'field_worker'],
+          roles: ['coordinator', 'admin', 'public', 'soul_winner', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
         {
           id: 'leaderboards',
           label: 'Leaderboards',
           icon: Trophy,
-          roles: ['coordinator', 'admin', 'public', 'field_worker'],
+          roles: ['coordinator', 'admin', 'public', 'soul_winner', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
         {
           id: 'reports',
-          label: 'Executive Reports',
+          label: userRole === 'pastor' ? 'Church Goals Report' : userRole === 'group_pastor' ? 'Group Performance' : 'Executive Reports',
           icon: FileSpreadsheet,
-          roles: ['coordinator', 'admin'],
-        },
-        {
-          id: 'projector',
-          label: 'Projector View',
-          icon: Tv,
-          roles: ['coordinator', 'admin', 'public', 'field_worker'],
-          isSpecial: true,
-        },
-        {
-          id: 'live-stream',
-          label: 'Live Stream',
-          icon: Video,
-          roles: ['coordinator', 'admin', 'public', 'field_worker'],
-          isSpecial: true,
+          roles: ['coordinator', 'admin', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
       ],
     },
@@ -143,54 +176,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
       group: 'Operations',
       items: [
         {
-          id: 'tally',
-          label: 'Tap to Tally',
-          icon: Zap,
-          roles: ['coordinator', 'admin', 'field_worker'],
-          isSpecial: true,
-        },
-        {
-          id: 'reconcile',
-          label: 'Reconcile Souls',
-          icon: CheckSquare,
-          roles: ['coordinator', 'admin', 'field_worker'],
-        },
-        {
           id: 'add-soul',
-          label: 'Full Form Record',
+          label: userRole === 'soul_winner' ? 'Record Soul' : 'Full Form Record',
           icon: PlusCircle,
-          roles: ['coordinator', 'admin', 'field_worker'],
+          roles: ['coordinator', 'admin', 'soul_winner', 'pastor', 'group_pastor', 'zonal_pastor'],
+          isSpecial: userRole === 'soul_winner',
+        },
+        {
+          id: 'records',
+          label:
+            userRole === 'soul_winner'
+              ? 'My Won Souls'
+              : userRole === 'pastor'
+              ? 'Church Soul Records'
+              : userRole === 'group_pastor'
+              ? 'Group Soul Directory'
+              : userRole === 'zonal_pastor'
+              ? 'Zonal Master Registry'
+              : 'Soul Directory',
+          icon: Database,
+          roles: ['coordinator', 'admin', 'soul_winner', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
         {
           id: 'testimonies',
           label: 'Media & Testimonies',
           icon: Camera,
-          roles: ['coordinator', 'admin', 'public', 'field_worker'],
+          roles: ['coordinator', 'admin', 'soul_winner', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
         {
           id: 'approval',
-          label: 'Verification Queue',
+          label: 'Manual Verification Queue',
           icon: UserCheck,
-          roles: ['coordinator', 'admin'],
+          roles: ['coordinator', 'admin', 'pastor', 'group_pastor', 'zonal_pastor'],
           badge: pendingApprovalsCount,
         },
         {
-          id: 'records',
-          label: userRole === 'field_worker' ? 'My Won Souls' : 'Soul Directory',
-          icon: Database,
-          roles: ['coordinator', 'admin', 'field_worker'],
-        },
-        {
           id: 'soul-winners',
-          label: 'Soul Winners Roster',
+          label: userRole === 'pastor' ? 'Church Soul Winners' : userRole === 'group_pastor' ? 'Group Soul Winners' : 'Soul Winners Roster',
           icon: Users,
-          roles: ['coordinator', 'admin'],
+          roles: ['coordinator', 'admin', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
         {
           id: 'followup',
           label: 'Follow-Up Board',
           icon: History,
-          roles: ['coordinator', 'admin'],
+          roles: ['coordinator', 'admin', 'pastor', 'group_pastor', 'zonal_pastor'],
         },
       ],
     },
@@ -199,15 +229,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         {
           id: 'admin',
-          label: 'Admin Settings',
+          label: userRole === 'zonal_pastor' ? 'Zone Governance' : 'Admin Settings',
           icon: Settings,
-          roles: ['admin'],
+          roles: ['admin', 'zonal_pastor'],
         },
         {
           id: 'audit-log',
           label: 'Security & Audit Log',
           icon: History,
-          roles: ['admin'],
+          roles: ['admin', 'zonal_pastor'],
         },
       ],
     },
@@ -286,6 +316,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
+
+          {/* Active Role Indicator Pill */}
+          {!isCollapsed && (
+            <div className="px-4 py-2 bg-slate-50/70 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Role</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                {userRole === 'public'
+                  ? 'Observer'
+                  : userRole === 'soul_winner'
+                  ? 'Soul Winner'
+                  : userRole === 'pastor'
+                  ? 'Pastor'
+                  : userRole === 'group_pastor'
+                  ? (soulWinnerProfile?.assignedGroup ? `${soulWinnerProfile.assignedGroup.replace(' Group', '')} Pastor` : 'Group Pastor')
+                  : userRole === 'zonal_pastor'
+                  ? 'Zonal Pastor'
+                  : userRole === 'admin'
+                  ? 'Admin'
+                  : 'Coordinator'}
+              </span>
+            </div>
+          )}
 
           {/* Desktop Expand Toggle when Collapsed */}
           {isCollapsed && onToggleCollapse && (
@@ -417,11 +469,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Bottom Section: Theme Switcher, Profile & Controls */}
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5 shrink-0">
-          {/* 1. LIGHT / DARK MODE TOGGLE (User Request) */}
+        {/* Bottom Section: Theme Switcher, Audio Toggle, Profile & Controls */}
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2 shrink-0">
+          {/* 1. LIGHT / DARK MODE TOGGLE */}
           {isCollapsed ? (
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -439,122 +491,250 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {isDark ? 'Light Mode' : 'Dark Mode'}
                 </div>
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs group"
-              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              <div className="flex items-center gap-2.5">
-                {isDark ? (
-                  <Moon className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
-                ) : (
-                  <Sun className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
-                )}
-                <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
-              </div>
-              {/* iOS / Bento Style Toggle Pill */}
-              <div
-                className={`w-9 h-5 rounded-full transition-colors flex items-center p-0.5 ${
-                  isDark ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
-                }`}
-              >
-                <div className="w-4 h-4 rounded-full bg-white shadow-xs" />
-              </div>
-            </button>
-          )}
-
-          {/* 2. User Profile Card (Jobgio Image 2 style) */}
-          {soulWinnerProfile && (
-            <button
-              type="button"
-              onClick={() => {
-                if (onOpenSoulWinnerReg) {
-                  onOpenSoulWinnerReg();
-                  onClose();
-                }
-              }}
-              className={`w-full flex items-center gap-2.5 p-2 rounded-2xl bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-900/80 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 transition-all text-left group cursor-pointer ${
-                isCollapsed ? 'justify-center p-1.5' : ''
-              }`}
-              title={`Profile: ${soulWinnerProfile.fullName}`}
-            >
-              <div className="relative shrink-0">
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shadow-xs"
-                  style={{ backgroundColor: palette.hex }}
-                >
-                  {soulWinnerProfile.fullName
-                    .split(' ')
-                    .filter(Boolean)
-                    .map(n => n[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase()}
-                </div>
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-full text-[8px] font-black flex items-center justify-center border border-white dark:border-slate-900">
-                  ★
-                </span>
-              </div>
-
-              {!isCollapsed && (
-                <div className="min-w-0 flex-1">
-                  <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {soulWinnerProfile.fullName}
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate">
-                    {soulWinnerProfile.cellName} · {soulWinnerProfile.pcfName}
-                  </div>
-                </div>
-              )}
-            </button>
-          )}
-
-          {/* 3. Compact Simulation Quick Controls (Expanded only) */}
-          {!isCollapsed && (
-            <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    {simStatus.isSimulating && (
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    )}
-                    <span
-                      className={`relative inline-flex rounded-full h-2 w-2 ${
-                        simStatus.isSimulating ? 'bg-emerald-500' : 'bg-slate-400'
-                      }`}
-                    />
-                  </span>
-                  Simulation
-                </span>
-
-                <button
-                  onClick={() => {
-                    if (simStatus.isSimulating) dataService.pauseSimulation();
-                    else dataService.resumeSimulation();
-                  }}
-                  className={`p-1 rounded text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer ${
-                    simStatus.isSimulating
-                      ? 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40'
-                      : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
-                  }`}
-                  title={simStatus.isSimulating ? 'Pause field reports' : 'Resume live feed'}
-                >
-                  {simStatus.isSimulating ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                  <span>{simStatus.isSimulating ? 'Pause' : 'Play'}</span>
-                </button>
-              </div>
 
               <button
-                onClick={() => dataService.triggerSimulatedSubmission(undefined, Math.floor(12 + Math.random() * 20))}
-                className={`w-full py-1.5 px-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-transform active:scale-98 shadow-xs cursor-pointer ${palette.btnPrimary}`}
+                type="button"
+                onClick={handleToggleSound}
+                className="w-11 h-11 rounded-2xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer shadow-2xs group relative"
+                title={isSoundOn ? 'Audio Chimes Enabled' : 'Audio Chimes Muted'}
+                aria-label="Toggle Audio Chimes"
               >
-                <Zap className="w-3 h-3" />
-                <span>Simulate (+15)</span>
+                {isSoundOn ? (
+                  <Volume2 className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-slate-400 group-hover:scale-110 transition-transform" />
+                )}
+                {/* Tooltip on hover */}
+                <div className="absolute left-14 px-2.5 py-1 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold shadow-xl whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                  {isSoundOn ? 'Audio Chimes: ON' : 'Audio Chimes: MUTED'}
+                </div>
               </button>
             </div>
+          ) : (
+            <div className="space-y-1.5">
+              {/* Theme Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="w-full flex items-center justify-between p-2 rounded-2xl bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs group"
+                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                <div className="flex items-center gap-2">
+                  {isDark ? (
+                    <Moon className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+                  ) : (
+                    <Sun className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                  )}
+                  <span>{isDark ? 'Dark Mode' : 'Light Mode'}</span>
+                </div>
+                {/* iOS / Bento Style Toggle Pill */}
+                <div
+                  className={`w-8 h-4.5 rounded-full transition-colors flex items-center p-0.5 ${
+                    isDark ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
+                  }`}
+                >
+                  <div className="w-3.5 h-3.5 rounded-full bg-white shadow-xs" />
+                </div>
+              </button>
+
+              {/* Audio Chime Toggle Button */}
+              <button
+                type="button"
+                onClick={handleToggleSound}
+                className="w-full flex items-center justify-between p-2 rounded-2xl bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 transition-all cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-200 shadow-2xs group"
+                title={isSoundOn ? 'Mute Harvest Sound Chimes' : 'Enable Harvest Sound Chimes'}
+              >
+                <div className="flex items-center gap-2">
+                  {isSoundOn ? (
+                    <Volume2 className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                  ) : (
+                    <VolumeX className="w-4 h-4 text-slate-400 group-hover:scale-110 transition-transform" />
+                  )}
+                  <span>Audio Chimes</span>
+                </div>
+                {/* iOS / Bento Style Toggle Pill */}
+                <div
+                  className={`w-8 h-4.5 rounded-full transition-colors flex items-center p-0.5 ${
+                    isSoundOn ? 'bg-emerald-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'
+                  }`}
+                >
+                  <div className="w-3.5 h-3.5 rounded-full bg-white shadow-xs" />
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* 2. User Profile Card & Logout Button */}
+          {userRole !== 'public' && (
+            <div className="space-y-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenSoulWinnerReg) {
+                    onOpenSoulWinnerReg();
+                    onClose();
+                  }
+                }}
+                className={`w-full flex items-center gap-2.5 p-2 rounded-2xl bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-900/80 dark:hover:bg-slate-800/80 border border-slate-200/80 dark:border-slate-800 transition-all text-left group cursor-pointer ${
+                  isCollapsed ? 'justify-center p-1.5' : ''
+                }`}
+                title={`Profile: ${
+                  soulWinnerProfile?.fullName ||
+                  (userRole === 'admin'
+                    ? 'Campaign Admin'
+                    : userRole === 'zonal_pastor'
+                    ? 'Zonal Pastor'
+                    : userRole === 'group_pastor'
+                    ? 'Group Pastor'
+                    : userRole === 'pastor'
+                    ? 'Pastor'
+                    : 'Soul Winner')
+                } — Click to edit profile`}
+              >
+                <div className="relative shrink-0">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shadow-xs"
+                    style={{ backgroundColor: palette.hex }}
+                  >
+                    {(soulWinnerProfile?.fullName || userRole.toUpperCase())
+                      .split(' ')
+                      .filter(Boolean)
+                      .map(n => n[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()}
+                  </div>
+                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
+                </div>
+
+                {!isCollapsed && (
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {soulWinnerProfile?.fullName ||
+                        (userRole === 'admin'
+                          ? 'Campaign Administrator'
+                          : userRole === 'zonal_pastor'
+                          ? 'Zonal Pastor'
+                          : userRole === 'group_pastor'
+                          ? 'Group Pastor'
+                          : userRole === 'pastor'
+                          ? 'Pastor'
+                          : 'Soul Winner')}
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">
+                      {soulWinnerProfile
+                        ? (soulWinnerProfile.assignedGroup
+                          ? `${soulWinnerProfile.assignedGroup} Oversight`
+                          : `${soulWinnerProfile.cellName} · ${soulWinnerProfile.pcfName}`)
+                        : 'Christ Embassy Abuja Zone 1'}
+                    </div>
+                  </div>
+                )}
+              </button>
+
+              {/* Explicit Logout Button (Visible when logged in) */}
+              {isCollapsed ? (
+                <button
+                  type="button"
+                  onClick={handleLogoutClick}
+                  className="w-full h-9 rounded-2xl flex items-center justify-center text-rose-600 hover:bg-rose-100 dark:text-rose-400 dark:hover:bg-rose-950/60 transition-colors cursor-pointer border border-rose-200/60 dark:border-rose-900/50"
+                  title="Log Out (Switch to Observer mode)"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleLogoutClick}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-2xl bg-rose-50/90 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/60 border border-rose-200/70 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all cursor-pointer shadow-2xs group"
+                  title="Log out of current session and return to Observer mode"
+                >
+                  <div className="flex items-center gap-2">
+                    <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                    <span>Log Out</span>
+                  </div>
+                  <span className="text-[10px] text-rose-500/80 dark:text-rose-400/80 font-normal">Switch to Observer</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* PWA Install Button (Field Offline Access) */}
+          <div className="w-full">
+            <PWAInstallButton variant={isCollapsed ? 'compact' : 'button'} className="w-full" />
+          </div>
+
+          {/* 3. Observer Sign In CTA or Simulation Controls (Expanded only) */}
+          {!isCollapsed && (
+            userRole === 'public' ? (
+              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs">
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Observer Mode</span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                  You are viewing the live public stream. Sign in to log souls from the field.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenAuthModal) {
+                      onOpenAuthModal();
+                      onClose();
+                    } else {
+                      const btn = document.getElementById('header-login-btn');
+                      if (btn) btn.click();
+                    }
+                  }}
+                  className="w-full py-1.5 px-2.5 rounded-xl font-bold text-[11px] bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Sign In / Register</span>
+                </button>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/70 dark:border-slate-800/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      {simStatus.isSimulating && (
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      )}
+                      <span
+                        className={`relative inline-flex rounded-full h-2 w-2 ${
+                          simStatus.isSimulating ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`}
+                      />
+                    </span>
+                    Simulation
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      if (simStatus.isSimulating) dataService.pauseSimulation();
+                      else dataService.resumeSimulation();
+                    }}
+                    className={`p-1 rounded text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer ${
+                      simStatus.isSimulating
+                        ? 'text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                        : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                    }`}
+                    title={simStatus.isSimulating ? 'Pause field reports' : 'Resume live feed'}
+                  >
+                    {simStatus.isSimulating ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                    <span>{simStatus.isSimulating ? 'Pause' : 'Play'}</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => dataService.triggerSimulatedSubmission(undefined, Math.floor(12 + Math.random() * 20))}
+                  className={`w-full py-1.5 px-2.5 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-transform active:scale-98 shadow-xs cursor-pointer ${palette.btnPrimary}`}
+                >
+                  <Zap className="w-3 h-3" />
+                  <span>Simulate (+15)</span>
+                </button>
+              </div>
+            )
           )}
 
           {/* 4. Target Progress Card (Expanded only) */}

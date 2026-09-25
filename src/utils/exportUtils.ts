@@ -177,7 +177,7 @@ export function exportCollationReportCSV(
 
   records.forEach(r => {
     const centre = centreMap.get(r.centreId);
-    const region = centre ? regionMap.get(centre.regionId) : undefined;
+    const region = (centre && centre.regionId) ? regionMap.get(centre.regionId) : undefined;
     const formattedDate = new Date(r.wonAt).toLocaleString('en-GB', {
       year: 'numeric',
       month: 'short',
@@ -276,7 +276,7 @@ export function exportAllRecordsCSV(
 
   const rows = records.map(r => {
     const centre = centreMap.get(r.centreId);
-    const region = centre ? regionMap.get(centre.regionId) : undefined;
+    const region = (centre && centre.regionId) ? regionMap.get(centre.regionId) : undefined;
     const formattedDate = new Date(r.wonAt).toLocaleString('en-GB', {
       year: 'numeric',
       month: 'short',
@@ -982,15 +982,14 @@ export function generateCampaignSummaryHTML(data: CampaignReportData): string {
     <!-- Floating Action Bar (Hidden in Print) -->
     <div class="action-bar no-print">
       <div style="font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px;">
-        <span>📄</span>
         <span>Campaign Summary Collation Report</span>
       </div>
       <div style="display: flex; gap: 8px;">
         <button class="btn btn-primary" onclick="window.print()">
-          <span>🖨️ Print / Save as PDF</span>
+          <span>Print / Save as PDF</span>
         </button>
         <button class="btn btn-outline" onclick="window.close()">
-          <span>✕ Close</span>
+          <span>Close</span>
         </button>
       </div>
     </div>

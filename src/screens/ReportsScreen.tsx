@@ -53,6 +53,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { GeospatialHarvestMap } from '../components/GeospatialHarvestMap';
+import { resolveGroupJurisdiction, getCentresForJurisdiction } from '../services/groupJurisdictionService';
 
 interface ReportsScreenProps {
   userRole: UserRole;
@@ -64,8 +65,8 @@ type DatePreset = 'all' | 'today' | 'yesterday' | 'last3days' | 'last7days' | 'c
 export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNavigate }) => {
   const { palette } = useTheme();
 
-  // Role Access Guard: Executive reports are restricted from public & field workers
-  if (userRole === 'public' || userRole === 'field_worker') {
+  // Role Access Guard: Executive reports are restricted from public & soul winners
+  if (userRole === 'public' || userRole === 'soul_winner') {
     return (
       <div className="max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-center space-y-4 shadow-xs">
         <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -79,10 +80,10 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
         </p>
         <div className="pt-2 flex items-center justify-center gap-3">
           <button
-            onClick={() => onNavigate?.(userRole === 'field_worker' ? 'tally' : 'dashboard')}
+            onClick={() => onNavigate?.(userRole === 'soul_winner' ? 'tally' : 'dashboard')}
             className={`px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-xs cursor-pointer transition-transform active:scale-95 ${palette.btnPrimary}`}
           >
-            {userRole === 'field_worker' ? 'Go to Tap to Tally' : 'Go to Live Dashboard'}
+            {userRole === 'soul_winner' ? 'Go to Tap to Tally' : 'Go to Live Dashboard'}
           </button>
         </div>
       </div>
@@ -94,6 +95,21 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
   const [centres, setCentres] = useState<Centre[]>(() => dataService.getCentres());
   const [regions, setRegions] = useState<Region[]>(() => dataService.getRegions());
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const activeProfile = dataService.getSoulWinnerProfile();
+  const groupJurisdiction = useMemo(() => resolveGroupJurisdiction(activeProfile, centres), [activeProfile, centres]);
+  const roleAllowedCentres = useMemo(() => {
+    if (userRole === 'group_pastor') {
+      return getCentresForJurisdiction(groupJurisdiction, centres);
+    }
+    if (userRole === 'pastor') {
+      const pId = activeProfile?.churchCentreId || centres[0]?.id;
+      const found = centres.filter(c => c.id === pId || c.name === activeProfile?.churchName);
+      return found.length > 0 ? found : (centres[0] ? [centres[0]] : []);
+    }
+    return centres;
+  }, [userRole, groupJurisdiction, centres, activeProfile]);
+  const roleAllowedCentreIds = useMemo(() => new Set(roleAllowedCentres.map(c => c.id)), [roleAllowedCentres]);
 
   // Filter States
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
@@ -172,7 +188,7 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
 
   // Filtered Soul Records
   const filteredRecords = useMemo(() => {
-    return dataService.getSoulRecords({
+    const raw = dataService.getSoulRecords({
       centreId: selectedCentreId !== 'all' ? selectedCentreId : undefined,
       decisionType: selectedDecision !== 'all' ? (selectedDecision as DecisionType) : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
@@ -180,18 +196,26 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
       endDate: endDate || undefined,
       includeDeleted: false,
     });
-  }, [selectedCentreId, selectedDecision, selectedStatus, startDate, endDate, refreshTrigger]);
+    if (userRole === 'group_pastor' || userRole === 'pastor') {
+      return raw.filter(r => roleAllowedCentreIds.has(r.centreId));
+    }
+    return raw;
+  }, [selectedCentreId, selectedDecision, selectedStatus, startDate, endDate, refreshTrigger, userRole, roleAllowedCentreIds]);
 
   // Filtered Batches
   const filteredBatches = useMemo(() => {
-    return dataService.getBatches({
+    const raw = dataService.getBatches({
       centreId: selectedCentreId !== 'all' ? selectedCentreId : undefined,
       status: selectedStatus !== 'all' ? selectedStatus : undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
       includeDeleted: false,
     });
-  }, [selectedCentreId, selectedStatus, startDate, endDate, refreshTrigger]);
+    if (userRole === 'group_pastor' || userRole === 'pastor') {
+      return raw.filter(b => roleAllowedCentreIds.has(b.centreId));
+    }
+    return raw;
+  }, [selectedCentreId, selectedStatus, startDate, endDate, refreshTrigger, userRole, roleAllowedCentreIds]);
 
   // Computed Metrics
   const reportData = useMemo<CampaignReportData>(() => {
@@ -277,7 +301,7 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
         centreId: c.id,
         centreName: c.name,
         code: c.code,
-        regionName: regionMap.get(c.regionId) || 'National',
+        regionName: (c.regionId ? regionMap.get(c.regionId) : undefined) || 'National',
         coordinatorName: c.coordinatorName || 'Assigned Coordinator',
         target: c.target,
         individualRecords: cRecords,
@@ -848,7 +872,7 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
                   <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                        Field Worker Reconciliation Performance ({workerStats.length})
+                        Soul Winner Reconciliation Performance ({workerStats.length})
                       </h4>
                       <p className="text-xs text-slate-400">Individual worker accountability and follow-up clearance rates</p>
                     </div>
@@ -857,7 +881,7 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({ userRole, onNaviga
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="bg-slate-50 dark:bg-slate-900/60 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700">
-                          <th className="py-3 px-4">Field Worker</th>
+                          <th className="py-3 px-4">Soul Winner</th>
                           <th className="py-3 px-4 text-right">Total Tapped</th>
                           <th className="py-3 px-4 text-right">Contactable</th>
                           <th className="py-3 px-4 text-right">Fully Documented</th>

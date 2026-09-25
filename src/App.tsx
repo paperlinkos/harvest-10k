@@ -3,7 +3,7 @@ import { dataService } from './services/dataService';
 import { UserRole } from './types';
 import { useTheme } from './context/ThemeContext';
 import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
+import { AuthModal } from './components/AuthModal';
 import { LiveTicker } from './components/LiveTicker';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LiveDashboard } from './screens/LiveDashboard';
@@ -28,21 +28,50 @@ import { SoulWinnerRegistrationModal } from './components/SoulWinnerRegistration
 import { SoulWinnersScreen } from './screens/SoulWinnersScreen';
 import { SoulWinnerProfile } from './types';
 import { ScreenName } from './components/Sidebar';
+import { useAuth } from './context/AuthContext';
 
 type Screen = ScreenName;
 
 const ALLOWED_SCREENS_BY_ROLE: Record<UserRole, Screen[]> = {
-  public: ['dashboard', 'leaderboards', 'projector', 'live-stream', 'testimonies'],
-  field_worker: [
-    'tally',
-    'reconcile',
+  public: ['dashboard', 'leaderboards'],
+  soul_winner: [
+    'dashboard',
+    'leaderboards',
     'add-soul',
     'records',
     'testimonies',
+  ],
+  pastor: [
     'dashboard',
     'leaderboards',
-    'projector',
-    'live-stream',
+    'reports',
+    'records',
+    'soul-winners',
+    'followup',
+    'approval',
+    'testimonies',
+  ],
+  group_pastor: [
+    'dashboard',
+    'leaderboards',
+    'reports',
+    'records',
+    'soul-winners',
+    'followup',
+    'approval',
+    'testimonies',
+  ],
+  zonal_pastor: [
+    'dashboard',
+    'leaderboards',
+    'reports',
+    'records',
+    'soul-winners',
+    'followup',
+    'approval',
+    'testimonies',
+    'audit-log',
+    'admin',
   ],
   coordinator: [
     'dashboard',
@@ -56,15 +85,11 @@ const ALLOWED_SCREENS_BY_ROLE: Record<UserRole, Screen[]> = {
     'reconcile',
     'add-soul',
     'testimonies',
-    'projector',
-    'live-stream',
   ],
   admin: [
     'dashboard',
     'leaderboards',
     'reports',
-    'projector',
-    'live-stream',
     'tally',
     'reconcile',
     'add-soul',
@@ -79,7 +104,10 @@ const ALLOWED_SCREENS_BY_ROLE: Record<UserRole, Screen[]> = {
 };
 
 const DEFAULT_LANDING_SCREEN: Record<UserRole, Screen> = {
-  field_worker: 'tally',
+  soul_winner: 'dashboard',
+  pastor: 'dashboard',
+  group_pastor: 'dashboard',
+  zonal_pastor: 'dashboard',
   coordinator: 'dashboard',
   admin: 'dashboard',
   public: 'dashboard',
@@ -87,7 +115,32 @@ const DEFAULT_LANDING_SCREEN: Record<UserRole, Screen> = {
 
 export default function App() {
   const { theme } = useTheme();
-  const [userRole, setUserRole] = useState<UserRole>('coordinator');
+  const { user: firebaseUser, isAdmin, logout: firebaseLogout } = useAuth();
+  const [userRole, setUserRole] = useState<UserRole>('public');
+
+  // Sync role with Firebase Auth: default sign in as soul_winner (Soul Winner), unauthenticated as Observer
+  useEffect(() => {
+    if (firebaseUser) {
+      if (isAdmin) {
+        setUserRole('admin');
+      } else if (userRole === 'public') {
+        setUserRole('soul_winner'); // Default sign in as Soul Winner
+      }
+    } else {
+      setUserRole('public'); // Default not logged in as Observer
+    }
+  }, [firebaseUser, isAdmin]);
+
+  const handleLogout = async () => {
+    try {
+      await firebaseLogout();
+    } catch (err) {
+      console.warn('Firebase logout error:', err);
+    }
+    setUserRole('public');
+    dataService.setCollationMode('live');
+    addToast('info', 'Logged Out', 'You have returned to clean public live campaign mode.');
+  };
   const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -113,6 +166,7 @@ export default function App() {
     });
   };
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [celebrationMilestone, setCelebrationMilestone] = useState<number | null>(null);
 
@@ -210,20 +264,27 @@ export default function App() {
 
   const handleRoleChange = (newRole: UserRole) => {
     setUserRole(newRole);
-    const allowed = ALLOWED_SCREENS_BY_ROLE[newRole];
+    const allowed = ALLOWED_SCREENS_BY_ROLE[newRole] || ['dashboard'];
+    const roleLabel =
+      newRole === 'soul_winner'
+        ? 'Soul Winner (Field Data Input)'
+        : newRole === 'pastor'
+        ? 'Pastor (Local Church Goals)'
+        : newRole === 'group_pastor'
+        ? 'Group Pastor (Multiple Churches)'
+        : newRole === 'zonal_pastor'
+        ? "Zonal Pastor (God's Eye View)"
+        : newRole === 'coordinator'
+        ? 'Coordinator'
+        : newRole === 'admin'
+        ? 'Administrator (Operations & Push)'
+        : 'Public Observer (Read-Only)';
+
     if (!allowed.includes(currentScreen)) {
       const nextScreen = DEFAULT_LANDING_SCREEN[newRole];
       setCurrentScreen(nextScreen);
-      const roleLabel =
-        newRole === 'field_worker'
-          ? 'Field Evangelist'
-          : newRole === 'coordinator'
-          ? 'Coordinator'
-          : newRole === 'admin'
-          ? 'Administrator'
-          : 'Public Observer';
-      addToast('info', 'Workspace Scoped', `Switched to ${roleLabel} view.`);
     }
+    addToast('info', 'Role Switched', `Now operating as: ${roleLabel}`);
   };
 
   const stats = dataService.getStats();
@@ -289,6 +350,7 @@ export default function App() {
             milestone={celebrationMilestone}
             verse={campaign.verse}
             campaignName={campaign.name}
+            target={campaign.target}
             onDismiss={() => setCelebrationMilestone(null)}
           />
         )}
@@ -306,6 +368,7 @@ export default function App() {
             milestone={celebrationMilestone}
             verse={campaign.verse}
             campaignName={campaign.name}
+            target={campaign.target}
             onDismiss={() => setCelebrationMilestone(null)}
           />
         )}
@@ -315,7 +378,9 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen flex flex-col transition-colors duration-200 contour-bg text-slate-900 dark:text-slate-100"
+      className={`flex flex-col transition-colors duration-200 contour-bg text-slate-900 dark:text-slate-100 ${
+        currentScreen === 'dashboard' ? 'h-screen overflow-hidden' : 'min-h-screen'
+      }`}
     >
       {/* Left Sidebar Navigation */}
       <Sidebar
@@ -327,6 +392,9 @@ export default function App() {
         onClose={() => setIsSidebarOpen(false)}
         onOpenTour={() => setIsOnboardingOpen(true)}
         onOpenSoulWinnerReg={() => setIsSoulWinnerRegOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
+        onRoleChange={handleRoleChange}
         soulWinnerProfile={soulWinnerProfile}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebarCollapse}
@@ -335,27 +403,9 @@ export default function App() {
       {/* Main Right Content Shell (offset by sidebar width on lg screens) */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64 xl:pl-72'
-        }`}
+          currentScreen === 'dashboard' ? 'h-full min-h-0 overflow-hidden' : ''
+        } ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64 xl:pl-72'}`}
       >
-        {/* Top Header Bar */}
-        <Header
-          currentScreen={currentScreen}
-          onNavigate={setCurrentScreen}
-          userRole={userRole}
-          onRoleChange={handleRoleChange}
-          offlineCount={offlineCount}
-          onSyncOffline={handleSyncOffline}
-          onOpenSidebar={() => setIsSidebarOpen(true)}
-          isOnline={isOnline}
-          onOpenQueueModal={() => setIsQueueModalOpen(true)}
-          onOpenTour={() => setIsOnboardingOpen(true)}
-          onOpenSoulWinnerReg={() => setIsSoulWinnerRegOpen(true)}
-          soulWinnerProfile={soulWinnerProfile}
-          onSoulWinnerProfileChange={(p) => setSoulWinnerProfile(p)}
-          onSuccessToast={(title, message) => addToast('success', title, message)}
-        />
-
         {/* Global Offline Field Banner */}
         <OfflineBanner
           isOnline={isOnline}
@@ -366,14 +416,23 @@ export default function App() {
         />
 
         {/* Dynamic Screen View */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main
+          className={`w-full max-w-7xl mx-auto transition-all ${
+            currentScreen === 'dashboard'
+              ? 'flex-1 flex flex-col min-h-0 h-full px-3 sm:px-6 lg:px-8 py-1.5 overflow-hidden'
+              : 'flex-1 p-4 sm:p-6 lg:p-8'
+          }`}
+        >
           {currentScreen === 'dashboard' && (
             <LiveDashboard
               theme={theme}
+              userRole={userRole}
               onNavigateToAddSoul={() => setCurrentScreen('add-soul')}
-              onNavigateToProjector={() => setCurrentScreen('projector')}
               onNavigate={(s) => setCurrentScreen(s)}
               onOpenTour={() => setIsOnboardingOpen(true)}
+              onOpenAuthModal={() => setIsAuthModalOpen(true)}
+              onOpenSidebar={() => setIsSidebarOpen(true)}
+              onLogout={handleLogout}
               onSuccessToast={(title, message) => addToast('success', title, message)}
             />
           )}
@@ -479,7 +538,11 @@ export default function App() {
 
         {/* Persistent Bottom Crawling Wire Ticker */}
         <footer className="sticky bottom-0 z-30">
-          <LiveTicker items={tickerItems} theme={theme} />
+          <LiveTicker
+            items={tickerItems}
+            announcement={campaign.announcement}
+            theme={theme}
+          />
         </footer>
       </div>
 
@@ -492,6 +555,7 @@ export default function App() {
           milestone={celebrationMilestone}
           verse={campaign.verse}
           campaignName={campaign.name}
+          target={campaign.target}
           onDismiss={() => setCelebrationMilestone(null)}
         />
       )}
@@ -502,8 +566,14 @@ export default function App() {
         onClose={() => setIsQueueModalOpen(false)}
         items={offlineQueueItems}
         isOnline={isOnline}
-        onSyncSingle={(id) => dataService.syncSingleOfflineItem(id)}
-        onSyncAll={() => dataService.syncAllOfflineItems()}
+        onSyncSingle={async (id) => {
+          const success = await dataService.syncSingleOfflineItem(id);
+          return { success };
+        }}
+        onSyncAll={async () => {
+          const res = await dataService.syncAllOfflineItems();
+          return { total: res.succeeded + res.failed, succeeded: res.succeeded, failed: res.failed };
+        }}
         onDeleteItem={(id) => dataService.deleteOfflineQueueItem(id)}
         onClearAll={() => dataService.clearAllOfflineQueue()}
         onSuccessToast={(title, message) => addToast('success', title, message)}
@@ -524,6 +594,22 @@ export default function App() {
           setSoulWinnerProfile(profile);
           addToast('success', 'Profile Saved!', `Welcome, ${profile.fullName} — ${profile.cellName} · ${profile.pcfName}`);
         }}
+        onLogout={handleLogout}
+      />
+
+      {/* Authentication & Role Switcher Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUserRole={userRole}
+        onRoleChange={(r) => {
+          handleRoleChange(r);
+        }}
+        soulWinnerProfile={soulWinnerProfile}
+        onOpenSoulWinnerReg={() => setIsSoulWinnerRegOpen(true)}
+        onSoulWinnerProfileChange={(p) => setSoulWinnerProfile(p)}
+        onLogout={handleLogout}
+        onSuccessToast={(title, message) => addToast('success', title, message)}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from './Modal';
 import { useTheme } from '../context/ThemeContext';
 import { COLOR_PALETTES, ColorPaletteKey } from '../lib/theme';
-import { Sparkles, Check, Sliders, Palette, RotateCcw, Layout } from 'lucide-react';
+import { Sparkles, Check, Sliders, Palette, RotateCcw, Layout, Sun, Moon } from 'lucide-react';
 
 interface ThemeCustomizerModalProps {
   isOpen: boolean;
@@ -117,7 +117,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
               }`}
             >
-              <span>☀️ Light Theme</span>
+              <Sun className="w-4 h-4" />
+              <span>Light Theme</span>
             </button>
             <button
               type="button"
@@ -128,7 +129,8 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
                   : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
               }`}
             >
-              <span>🌙 Dark Executive Theme</span>
+              <Moon className="w-4 h-4" />
+              <span>Dark Executive Theme</span>
             </button>
           </div>
         </div>

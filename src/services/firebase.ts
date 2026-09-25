@@ -1,21 +1,33 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, Firestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
+import appletConfig from '../../firebase-applet-config.json';
 
-// Firebase configuration for Harvest 10K
+// Firebase configuration for Harvest 10K connected to harvest-10k-abuja
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyD1c-WSS4ZxDW_60sEytc_2soxkKiBf3Y0",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "radio-over-lw-a7008.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "radio-over-lw-a7008",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "radio-over-lw-a7008.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "201441769052",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:201441769052:web:e5e09fb9c69ba5f2c4d899",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-GWMG2NPKQT"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || appletConfig.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || appletConfig.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || appletConfig.projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || appletConfig.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || appletConfig.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || appletConfig.appId,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || appletConfig.measurementId || ""
 };
 
 // Initialize Firebase App singleton
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize Cloud Firestore
-export const db: Firestore = getFirestore(app);
+// Initialize Cloud Firestore with provisioned database ID
+export const db: Firestore = appletConfig.firestoreDatabaseId
+  ? getFirestore(app, appletConfig.firestoreDatabaseId)
+  : getFirestore(app);
+
+// Initialize Firebase Authentication
+export const auth: Auth = getAuth(app);
+
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 export default app;

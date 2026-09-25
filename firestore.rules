@@ -6,7 +6,22 @@ service cloud.firestore {
       return val is string && val.size() > 0 && val.size() < 500;
     }
 
-    // Harvest 10K Soul Records: allow read for all authenticated/public displays, allow write
+    // Harvest 10K / CEAZ1 Soul Records & Live Collections
+    match /souls/{recordId} {
+      allow read, write: if true;
+    }
+    match /live_souls/{recordId} {
+      allow read, write: if true;
+    }
+    match /batches/{batchId} {
+      allow read, write: if true;
+    }
+    match /live_batches/{batchId} {
+      allow read, write: if true;
+    }
+    match /soulWinners/{winnerId} {
+      allow read, write: if true;
+    }
     match /harvest_souls/{recordId} {
       allow read: if true;
       allow create, update: if request.resource.data.keys().hasAll(['centreId'])
