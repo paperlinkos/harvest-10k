@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { dataService } from '../services/dataService';
 import { UserRole, SoulRecord, Batch, SmsGatewayTelemetry } from '../types';
 import { useTheme } from '../context/ThemeContext';
+import { resolveGroupJurisdiction, getCentresForJurisdiction } from '../services/groupJurisdictionService';
 import {
   CheckCircle2,
   XCircle,
@@ -39,19 +40,53 @@ export const ApprovalQueueScreen: React.FC<ApprovalQueueScreenProps> = ({
 }) => {
   const { palette } = useTheme();
   const [activeTab, setActiveTab] = useState<'undelivered' | 'delivered' | 'batches' | 'telemetry'>('undelivered');
-  const [undeliveredRecords, setUndeliveredRecords] = useState<SoulRecord[]>(
+  const [allUndeliveredRecords, setAllUndeliveredRecords] = useState<SoulRecord[]>(
     dataService.getUndeliveredSmsRecords()
   );
-  const [deliveredRecords, setDeliveredRecords] = useState<SoulRecord[]>(
+  const [allDeliveredRecords, setAllDeliveredRecords] = useState<SoulRecord[]>(
     dataService.getAutoConfirmedSmsRecords()
   );
-  const [pendingBatches, setPendingBatches] = useState<Batch[]>(
+  const [allPendingBatches, setAllPendingBatches] = useState<Batch[]>(
     dataService.getPendingBatches()
   );
   const [telemetry, setTelemetry] = useState<SmsGatewayTelemetry>(
     dataService.getSmsGatewayTelemetry()
   );
   const [smsLogs, setSmsLogs] = useState(dataService.getSmsLogs());
+
+  const centres = dataService.getCentres();
+  const activeProfile = dataService.getSoulWinnerProfile();
+
+  const roleAllowedCentres = useMemo(() => {
+    if (userRole === 'group_pastor') {
+      const jurisdiction = resolveGroupJurisdiction(activeProfile, centres);
+      return getCentresForJurisdiction(jurisdiction, centres);
+    }
+    if (userRole === 'pastor') {
+      const pId = activeProfile?.churchCentreId || centres[0]?.id;
+      const found = centres.filter(c => c.id === pId || c.name === activeProfile?.churchName);
+      return found.length > 0 ? found : (centres[0] ? [centres[0]] : []);
+    }
+    return centres;
+  }, [userRole, centres, activeProfile]);
+
+  const roleAllowedCentreIds = useMemo(() => new Set(roleAllowedCentres.map(c => c.id)), [roleAllowedCentres]);
+  const isScoped = userRole === 'group_pastor' || userRole === 'pastor';
+
+  const undeliveredRecords = useMemo(() => {
+    if (!isScoped) return allUndeliveredRecords;
+    return allUndeliveredRecords.filter(r => roleAllowedCentreIds.has(r.centreId));
+  }, [allUndeliveredRecords, isScoped, roleAllowedCentreIds]);
+
+  const deliveredRecords = useMemo(() => {
+    if (!isScoped) return allDeliveredRecords;
+    return allDeliveredRecords.filter(r => roleAllowedCentreIds.has(r.centreId));
+  }, [allDeliveredRecords, isScoped, roleAllowedCentreIds]);
+
+  const pendingBatches = useMemo(() => {
+    if (!isScoped) return allPendingBatches;
+    return allPendingBatches.filter(b => roleAllowedCentreIds.has(b.centreId));
+  }, [allPendingBatches, isScoped, roleAllowedCentreIds]);
 
   const [search, setSearch] = useState<string>('');
   const [carrierFilter, setCarrierFilter] = useState<string>('all');
@@ -67,9 +102,9 @@ export const ApprovalQueueScreen: React.FC<ApprovalQueueScreenProps> = ({
   const [selectedRecordForMessage, setSelectedRecordForMessage] = useState<SoulRecord | null>(null);
 
   const refreshData = () => {
-    setUndeliveredRecords(dataService.getUndeliveredSmsRecords());
-    setDeliveredRecords(dataService.getAutoConfirmedSmsRecords());
-    setPendingBatches(dataService.getPendingBatches());
+    setAllUndeliveredRecords(dataService.getUndeliveredSmsRecords());
+    setAllDeliveredRecords(dataService.getAutoConfirmedSmsRecords());
+    setAllPendingBatches(dataService.getPendingBatches());
     setTelemetry(dataService.getSmsGatewayTelemetry());
     setSmsLogs(dataService.getSmsLogs());
   };
@@ -151,7 +186,6 @@ export const ApprovalQueueScreen: React.FC<ApprovalQueueScreenProps> = ({
     refreshData();
   };
 
-  const centres = dataService.getCentres();
   const centreMap = new Map(centres.map(c => [c.id, c.name]));
 
   // Filtering for Undelivered tab

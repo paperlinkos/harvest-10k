@@ -68,6 +68,7 @@ import {
   deleteMediaFromDB,
 } from '../utils/mediaDB';
 import { firebaseSync } from './firebaseSync';
+import { resolveGroupJurisdiction, getCentresForJurisdiction } from './groupJurisdictionService';
 
 export interface SyncHistoryEntry {
   id: string;
@@ -2213,24 +2214,41 @@ export class DataService {
   }
 
   // --- Core Aggregated Stats ---
-  public getStats(): DashboardStats {
+  public getStats(profile?: SoulWinnerProfile | null, userRole?: UserRole): DashboardStats {
+    let allowedCentres = this.centres;
+    const isScoped = userRole === 'group_pastor' || userRole === 'pastor';
+    
+    if (userRole === 'group_pastor' && profile) {
+      const jurisdiction = resolveGroupJurisdiction(profile, this.centres);
+      allowedCentres = getCentresForJurisdiction(jurisdiction, this.centres);
+    } else if (userRole === 'pastor' && profile?.churchCentreId) {
+      const found = this.centres.filter(c => c.id === profile.churchCentreId || c.name === profile.churchName);
+      allowedCentres = found.length > 0 ? found : [this.centres[0]];
+    }
+
+    const allowedCentreIds = new Set(allowedCentres.map(c => c.id));
+
     let totalVerifiedSouls = 0;
 
     // Verified individual records
     this.soulRecords.forEach(r => {
-      if (!r.isDeleted && r.status === 'verified') {
+      if (!r.isDeleted && r.status === 'verified' && (!isScoped || allowedCentreIds.has(r.centreId))) {
         totalVerifiedSouls += 1;
       }
     });
 
     // Verified batches
     this.batches.forEach(b => {
-      if (!b.isDeleted && b.status === 'verified') {
+      if (!b.isDeleted && b.status === 'verified' && (!isScoped || allowedCentreIds.has(b.centreId))) {
         totalVerifiedSouls += b.count;
       }
     });
 
-    const target = this.campaign.target || 40000;
+    let target = this.campaign.target || 40000;
+    if (isScoped) {
+      target = allowedCentres.reduce((sum, c) => sum + (c.target || 0), 0) || (userRole === 'group_pastor' ? 2000 : 500);
+    }
+
     const percentage = Math.round((totalVerifiedSouls / Math.max(1, target)) * 1000) / 10;
     const remaining = Math.max(0, target - totalVerifiedSouls);
 
@@ -2239,19 +2257,19 @@ export class DataService {
     let soulsLastHour = 0;
 
     this.soulRecords.forEach(r => {
-      if (!r.isDeleted && r.status === 'verified' && new Date(r.wonAt).getTime() >= oneHourAgo) {
+      if (!r.isDeleted && r.status === 'verified' && (!isScoped || allowedCentreIds.has(r.centreId)) && new Date(r.wonAt).getTime() >= oneHourAgo) {
         soulsLastHour += 1;
       }
     });
     this.batches.forEach(b => {
-      if (!b.isDeleted && b.status === 'verified' && new Date(b.submittedAt).getTime() >= oneHourAgo) {
+      if (!b.isDeleted && b.status === 'verified' && (!isScoped || allowedCentreIds.has(b.centreId)) && new Date(b.submittedAt).getTime() >= oneHourAgo) {
         soulsLastHour += b.count;
       }
     });
 
     const pendingApprovalsCount =
-      this.batches.filter(b => b.status === 'pending' && !b.isDeleted).length +
-      this.soulRecords.filter(r => r.status === 'pending' && !r.isDeleted).length;
+      this.batches.filter(b => b.status === 'pending' && !b.isDeleted && (!isScoped || allowedCentreIds.has(b.centreId))).length +
+      this.soulRecords.filter(r => r.status === 'pending' && !r.isDeleted && (!isScoped || allowedCentreIds.has(r.centreId))).length;
 
     // Projected total based on current velocity
     const hourlyVelocity = soulsLastHour;
@@ -2262,8 +2280,8 @@ export class DataService {
       target,
       percentage,
       remaining,
-      centresReporting: this.centres.length,
-      totalCentres: this.centres.length,
+      centresReporting: allowedCentres.length,
+      totalCentres: allowedCentres.length,
       soulsLastHour,
       projectedTotal,
       hourlyVelocity,
@@ -2271,11 +2289,20 @@ export class DataService {
     };
   }
 
-  public getCentreStandings(): CentreStanding[] {
-    const stats = this.getStats();
+  public getCentreStandings(profile?: SoulWinnerProfile | null, userRole?: UserRole): CentreStanding[] {
+    let targetCentres = this.centres;
+    if (userRole === 'group_pastor' && profile) {
+      const jurisdiction = resolveGroupJurisdiction(profile, this.centres);
+      targetCentres = getCentresForJurisdiction(jurisdiction, this.centres);
+    } else if (userRole === 'pastor' && profile?.churchCentreId) {
+      const found = this.centres.filter(c => c.id === profile.churchCentreId || c.name === profile.churchName);
+      targetCentres = found.length > 0 ? found : [this.centres[0]];
+    }
+
+    const stats = this.getStats(profile, userRole);
     const totalSouls = Math.max(1, stats.totalSouls);
 
-    const standings: CentreStanding[] = this.centres.map(centre => {
+    const standings: CentreStanding[] = targetCentres.map(centre => {
       const areaCouncil = this.areaCouncils.find(ac => ac.id === centre.areaCouncilId);
       const councilName = areaCouncil ? areaCouncil.name : 'Abuja Municipal (AMAC)';
 
@@ -2956,6 +2983,8 @@ export class DataService {
 
     const newRecord: SoulRecord = {
       ...record,
+      groupName: centre?.groupName,
+      areaCouncilCode: centreCouncil,
       id: newId,
       phone: normalizedPhone,
       locality: localityName || undefined,
@@ -3227,9 +3256,13 @@ export class DataService {
     );
     const burstWarning = recentUserTaps.length >= 10;
 
+    const centre = this.centres.find(c => c.id === params.centreId);
+
     const newRecord: SoulRecord = {
       id: newId,
       centreId: params.centreId,
+      groupName: centre?.groupName,
+      areaCouncilCode: centre?.areaCouncilCode,
       firstName: '',
       lastName: '',
       phone: '',
@@ -3259,7 +3292,6 @@ export class DataService {
     this.soulRecords.push(newRecord);
     playDingSound();
 
-    const centre = this.centres.find(c => c.id === params.centreId);
     const centreName = centre ? centre.name : 'Abuja FCT Collation Hub';
 
     this.auditLogs.unshift({
@@ -3304,12 +3336,16 @@ export class DataService {
     const nowISO = new Date().toISOString();
     const ids: string[] = [];
 
+    const centre = this.centres.find(c => c.id === params.centreId);
+
     for (let i = 0; i < params.count; i++) {
       const newId = `soul-qn-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`;
       ids.push(newId);
       const newRecord: SoulRecord = {
         id: newId,
         centreId: params.centreId,
+        groupName: centre?.groupName,
+        areaCouncilCode: centre?.areaCouncilCode,
         firstName: '',
         lastName: '',
         phone: '',
@@ -3334,7 +3370,6 @@ export class DataService {
     }
 
     playDingSound();
-    const centre = this.centres.find(c => c.id === params.centreId);
     const centreName = centre ? centre.name : 'Abuja FCT Collation Hub';
 
     this.auditLogs.unshift({
@@ -3659,9 +3694,12 @@ export class DataService {
     actorName: string = 'Field Coordinator',
     actorRole: UserRole = 'coordinator'
   ): { success: boolean; id: string } {
+    const centre = this.centres.find(c => c.id === batch.centreId);
     const newId = `batch-${Date.now()}`;
     const newBatch: Batch = {
       ...batch,
+      groupName: centre?.groupName,
+      areaCouncilCode: centre?.areaCouncilCode,
       id: newId,
       submittedAt: new Date().toISOString(),
       status: this.campaign.verificationRequired ? 'pending' : 'verified',
@@ -3670,7 +3708,6 @@ export class DataService {
     this.batches.push(newBatch);
     playDingSound();
 
-    const centre = this.centres.find(c => c.id === batch.centreId);
     const centreName = centre ? centre.name : 'Abuja FCT Collation Hub';
 
     this.auditLogs.unshift({

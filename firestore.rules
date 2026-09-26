@@ -11,13 +11,17 @@ service cloud.firestore {
       allow read, write: if true;
     }
     match /live_souls/{recordId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasAll(['centreId']) && request.resource.data.centreId is string;
+      allow delete: if true;
     }
     match /batches/{batchId} {
       allow read, write: if true;
     }
     match /live_batches/{batchId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasAll(['centreId']) && request.resource.data.centreId is string;
+      allow delete: if true;
     }
     match /soulWinners/{winnerId} {
       allow read, write: if true;

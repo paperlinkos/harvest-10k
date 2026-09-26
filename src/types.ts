@@ -141,6 +141,8 @@ export interface SoulRecord {
   winnerCell?: string; // Cell unit e.g. "Grace Cell"
   winnerPcf?: string; // Pastoral Care Fellowship / Church Group e.g. "Haven PCF"
   winnerChurch?: string;
+  groupName?: string;
+  areaCouncilCode?: AreaCouncilCode;
   rejectionReason?: string;
   verifiedAt?: string;
   verifiedBy?: string;
@@ -229,6 +231,8 @@ export interface Batch {
   winnerPhone?: string;
   winnerCell?: string;
   winnerPcf?: string;
+  groupName?: string;
+  areaCouncilCode?: AreaCouncilCode;
   sessionLabel: string;
   count: number;
   newConverts: number;

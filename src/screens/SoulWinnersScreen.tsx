@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { dataService } from '../services/dataService';
 import { UserRole, SoulWinnerSummary } from '../types';
 import { ScreenName } from '../components/Sidebar';
 import { useTheme } from '../context/ThemeContext';
+import { resolveGroupJurisdiction, getCentresForJurisdiction } from '../services/groupJurisdictionService';
 import {
   Users,
   Search,
@@ -44,15 +45,38 @@ export const SoulWinnersScreen: React.FC<SoulWinnersScreenProps> = ({
   }, []);
 
   const centres = dataService.getCentres();
+  const activeProfile = dataService.getSoulWinnerProfile();
+
+  const roleAllowedCentres = useMemo(() => {
+    if (userRole === 'group_pastor') {
+      const jurisdiction = resolveGroupJurisdiction(activeProfile, centres);
+      return getCentresForJurisdiction(jurisdiction, centres);
+    }
+    if (userRole === 'pastor') {
+      const pId = activeProfile?.churchCentreId || centres[0]?.id;
+      const found = centres.filter(c => c.id === pId || c.name === activeProfile?.churchName);
+      return found.length > 0 ? found : (centres[0] ? [centres[0]] : []);
+    }
+    return centres;
+  }, [userRole, centres, activeProfile]);
+
+  const roleAllowedCentreIds = useMemo(() => new Set(roleAllowedCentres.map(c => c.id)), [roleAllowedCentres]);
 
   const filteredWinners = winners.filter(w => {
+    const matchesRoleJurisdiction =
+      userRole === 'admin' || userRole === 'zonal_pastor' || userRole === 'coordinator' || userRole === 'public'
+        ? true
+        : !w.churchCentreId || roleAllowedCentreIds.has(w.churchCentreId);
+
     const matchesSearch =
       w.fullName.toLowerCase().includes(search.toLowerCase()) ||
       w.cellName.toLowerCase().includes(search.toLowerCase()) ||
       w.phone.includes(search);
+
     const matchesCentre =
       selectedCentre === 'all' || w.churchCentreId === selectedCentre;
-    return matchesSearch && matchesCentre;
+
+    return matchesRoleJurisdiction && matchesSearch && matchesCentre;
   });
 
   return (

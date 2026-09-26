@@ -112,8 +112,9 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
   const [activeChartTab, setActiveChartTab] = useState<'hourly' | 'cumulative'>('hourly');
 
   // Collation statistics & telemetry
-  const stats = dataService.getStats();
-  const standings = dataService.getCentreStandings();
+  const activeProfile = dataService.getSoulWinnerProfile();
+  const stats = dataService.getStats(activeProfile, userRole);
+  const standings = dataService.getCentreStandings(activeProfile, userRole);
   const hourlyTrend = dataService.getHourlyTrend();
   const dailyCumulative = dataService.getDailyCumulative();
   const decisionBreakdown = dataService.getDecisionBreakdown();
